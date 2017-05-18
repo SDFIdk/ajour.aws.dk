@@ -1,49 +1,68 @@
 $(function() {
 
-	 // var mymap = L.map('map').setView([51.505, -0.09], 13);
-	 // var osm = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: 'Data</a> fra <a href="http://dawa.aws.dk">DAWA</a> | Map data &copy;  Styrelsen for Dataforsyning og Effektivisering'});
-  //  osm.addTo(mymap);
-  //  return;
+  var map
+    , fra= moment().startOf('day')
+    , til= moment()
+    , sekvensnummer= 0;
+
+  function corsdataoptions(options) {
+     if (corssupported()) {
+      options.dataType= "json";
+      options.jsonp= false;
+    }
+    else {        
+      options.dataType= "jsonp";
+    }
+  }
+
+
+  var hentData= function() {
+    var options= {};
+    options.data= {tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()};
+    options.url= 'https://dawa.aws.dk/replikering/adgangsadresser/haendelser';
+    corsdataoptions(options);
+    $.ajax(options)
+    .then( function ( data ) {
+      visData(data,false);
+    })
+  }
+
+  var visData= function(data, dopopup) {
+    var id= null;
+    for (var i= 0; i<data.length; i++) {
+      if (data[i].operation === 'update' && id === data[i].data.id) continue;
+      id= data[i].data.id;
+      var wgs84= etrs89towgs84(data[i].data.etrs89koordinat_øst, data[i].data.etrs89koordinat_nord);
+      var color= 'blue'   
+        , operation= 'ukendt';
+
+      switch (data[i].operation) {
+      case 'insert':
+        color= 'red';
+        operation= 'oprettet';
+        break;
+      case 'update':
+        color= 'orange';
+        operation= 'ændret';
+        break;
+      case 'delete':
+        color= 'black';
+        operation= 'nedlagt';
+        break;
+      }
+      var marker= L.circleMarker(L.latLng(wgs84.y, wgs84.x), {color: color, fillColor: color, stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
+      var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/replikering/adgangsadresser/haendelser?id="+data[i].data.id+"'>" + data[i].data.husnr +  ' ' + operation + "</a>"),{autoPan: true});
+      if (dopopup) popup.openPopup();
+      sekvensnummer= data[i].sekvensnummer;
+    } 
+  } 
 
   $.ajax({
       url: '/getticket'
   })
   .then( function ( ticket ) {
-
-  	var crs = new L.Proj.CRS('EPSG:25832',
-      '+proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs', 
-      {
-          resolutions: [1638.4, 819.2, 409.6, 204.8, 102.4, 51.2, 25.6, 12.8, 6.4, 3.2, 1.6, 0.8, 0.4, 0.2, 0.1]
-      }
-    );
-
-	  var map = new L.Map('map', {
-	      crs: crs,
-	      maxBounds: [
-			    [57.751949, 15.193240],
-			    [54.559132, 8.074720]
-			  ]
-	  });
-
-		var skaermkortdaempet = L.tileLayer.wms('https://kortforsyningen.kms.dk/service', 
-			{
-				//crs: crs,
-				format: 'image/png',
-				maxZoom: 14,
-				minZoom: 2,
-				ticket: ticket,
-				servicename: 'topo_skaermkort',
-    		attribution: 'Data</a> fra <a href="http://dawa.aws.dk">DAWA</a> | Map data &copy;  <a href="http://sdfe.dk">SDFE</a>',
-    		layers: 'dtk_skaermkort_daempet',
-    		continuousWorld: true
-   		}
-   	).addTo(map);
-  
-  	map.fitBounds([
-    	[57.751949, 15.193240],
-    	[54.559132, 8.074720]
-  	]);
-
+    map= viskort('map', ticket);
+    hentData();
   });
 
 });
