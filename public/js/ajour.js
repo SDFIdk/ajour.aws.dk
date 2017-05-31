@@ -23,7 +23,7 @@ $(function() {
     corsdataoptions(options);
     $.ajax(options)
     .then( function ( data ) {
-      visData(data,false);
+      visData(data,true);
     })
   }
 
