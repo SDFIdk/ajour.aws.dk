@@ -31,9 +31,6 @@ var viskort = function(id,ticket) {
   	[54.559132, 8.074720]
 	]);
 
-	 var koor1= etrs89towgs84(6440000,890000)
-	 var koor2= etrs89towgs84(6072000,1699000);
-
 	return map;
 };
 
