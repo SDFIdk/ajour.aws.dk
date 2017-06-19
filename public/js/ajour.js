@@ -58,22 +58,13 @@ $(function() {
     return url;
   }
 
-  var initAdgangsadresser= async function() {
+  var initAdgangsadresser= new Promise(async function(resolve, reject) {
     var url = danUrl(host + 'replikering/adgangsadresser/haendelser', {tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()});
     let response = await fetch(url);
     let adgangsadresser = await response.json();
     visAdgangsadresser(adgangsadresser,true);
-    setInterval(function () {
-        $.ajax({url: host+"/replikering/senestesekvensnummer", dataType: "jsonp"})
-        .then( function ( seneste ) {
-          if (seneste.sekvensnummer > sekvensnummer) { 
-            var snr= sekvensnummer+1;            
-            sekvensnummer= seneste.sekvensnummer;
-            hentAdgangsadresser(snr,seneste.sekvensnummer); 
-          }
-        });
-      }, 60000);
-  }
+    resolve();
+  });
 
   var hentAdgangsadresser= function(fra,til) {
     var options= {};
@@ -116,39 +107,42 @@ $(function() {
   var visAdgangsadresser= function(data, dopopup) {
     var promises= [];    
     for (var i= 0; i<data.length; i++) {
-      if (data)
-      var options= {};
-      options.url= encodeURI(host+"vejstykker");
-      options.data= {kode: data[i].data.vejkode, kommunekode: data[i].data.kommunekode}
-      options.error= function(jqXHR, textStatus, errorThrown) {
-      }
-      corsdataoptions(options);
-      promises.push($.ajax(options));
+      let url = danUrl(host+"vejstykker", {kode: data[i].data.vejkode, kommunekode: data[i].data.kommunekode});
+      promises.push(fetch(url));
       sekvensnummer= data[i].sekvensnummer;
     }
     begrænssamtidige(promises, data, 0, 10, visAdgangsadresse);
   }
 
-  function begrænssamtidige(promises, hændelser, start, længde, vis) {
+  async function begrænssamtidige(promises, hændelser, start, længde, vis) {
     var l= (promises.length-start<længde?promises.length-start:længde); 
     var subpromises= promises.slice(start,start+l);
-    $.when.apply($, subpromises).then(function() {
-      for (var i = 0; i < subpromises.length; i++) {
-        vis(arguments[i][0][0], hændelser[start+i], true);
-      } 
-      begrænssamtidige(promises,hændelser,start+længde,længde,vis);
-    }); //, function() {
-      //alert("<p>Kald til DAWA fejlede: " + arguments[1] + "  "  + arguments[2] + "</p>");
-    //});
+    let responses= await Promise.all(subpromises);
+    let veje= await Promise.all(responses);
+    for (var i = 0; i < subpromises.length; i++) { 
+      vis(veje[0].json(), hændelser[start+i], true);
+    } 
+    begrænssamtidige(promises,hændelser,start+længde,længde,vis);
   }
 
-  $.ajax({
-    url: '/getticket'
-  })
-  .then( function ( ticket ) {
+  async function main() {
+    let response= await fetch('/getticket');    
+    let ticket = await response.text(); 
     map= viskort('map', ticket);
-    initAdgangsadresser();
-    initAdresser.then(() => alert('Succes')).catch((error) => alert('error'));
-  });
+    await initAdgangsadresser;
+    await initAdresser;
+    setInterval(function () {
+      $.ajax({url: host+"/replikering/senestesekvensnummer", dataType: "jsonp"})
+      .then( function ( seneste ) {
+        if (seneste.sekvensnummer > sekvensnummer) { 
+          var snr= sekvensnummer+1;            
+          sekvensnummer= seneste.sekvensnummer;
+          hentAdgangsadresser(snr,seneste.sekvensnummer); 
+        }
+      });
+    }, 60000);
+  }
+
+  main();
 
 });
