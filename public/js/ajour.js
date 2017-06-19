@@ -58,26 +58,22 @@ $(function() {
     return url;
   }
 
-
-  var initAdgangsadresser= function() {
+  var initAdgangsadresser= async function() {
     var url = danUrl(host + 'replikering/adgangsadresser/haendelser', {tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()});
-    fetch(url).then(function ( response ) {
-      return response.json();
-    }).then(function (adgangsadresser) {
-      visAdgangsadresser(adgangsadresser,true);
-      setInterval(function () {
-          $.ajax({url: host+"/replikering/senestesekvensnummer", dataType: "jsonp"})
-          .then( function ( seneste ) {
-            if (seneste.sekvensnummer > sekvensnummer) { 
-              var snr= sekvensnummer+1;            
-              sekvensnummer= seneste.sekvensnummer;
-              hentAdgangsadresser(snr,seneste.sekvensnummer); 
-            }
-          });
-        }, 60000);
-    })
+    let response = await fetch(url);
+    let adgangsadresser = await response.json();
+    visAdgangsadresser(adgangsadresser,true);
+    setInterval(function () {
+        $.ajax({url: host+"/replikering/senestesekvensnummer", dataType: "jsonp"})
+        .then( function ( seneste ) {
+          if (seneste.sekvensnummer > sekvensnummer) { 
+            var snr= sekvensnummer+1;            
+            sekvensnummer= seneste.sekvensnummer;
+            hentAdgangsadresser(snr,seneste.sekvensnummer); 
+          }
+        });
+      }, 60000);
   }
-
 
   var hentAdgangsadresser= function(fra,til) {
     var options= {};
