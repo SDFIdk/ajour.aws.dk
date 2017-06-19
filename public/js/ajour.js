@@ -17,20 +17,20 @@ $(function() {
   }
 
 
-  var initAdresser = new Promise(function(resolve, reject) {
-    var options= {};
-    options.data= {tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()};
-    options.url= host + 'replikering/adresser/haendelser';
-    corsdataoptions(options);
-    $.ajax(options)
-    .done( function ( data ) {
-      visAdresser(data,true);
-      resolve();
-    })
-    .fail(function( jqXHR, textStatus, errorThrown ) {
-      reject(textSatus);
-    });
-  });
+  // var initAdresser = new Promise(function(resolve, reject) {
+  //   var options= {};
+  //   options.data= {tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()};
+  //   options.url= host + 'replikering/adresser/haendelser';
+  //   corsdataoptions(options);
+  //   $.ajax(options)
+  //   .done( function ( data ) {
+  //     visAdresser(data,true);
+  //     resolve();
+  //   })
+  //   .fail(function( jqXHR, textStatus, errorThrown ) {
+  //     reject(textSatus);
+  //   });
+  // });
 
   // var initAdgangsadresser= function() {
   //   var options= {};
@@ -115,12 +115,13 @@ $(function() {
   }
 
   async function begrænssamtidige(promises, hændelser, start, længde, vis) {
+    if (start >= promises.length) return;
     var l= (promises.length-start<længde?promises.length-start:længde); 
     var subpromises= promises.slice(start,start+l);
     let responses= await Promise.all(subpromises);
-    let veje= await Promise.all(responses);
-    for (var i = 0; i < subpromises.length; i++) { 
-      vis(veje[0].json(), hændelser[start+i], true);
+    for (var i = 0; i < responses.length; i++) {
+      let veje= await responses[i].json(); 
+      vis(veje[0], hændelser[start+i], true);
     } 
     begrænssamtidige(promises,hændelser,start+længde,længde,vis);
   }
@@ -130,7 +131,7 @@ $(function() {
     let ticket = await response.text(); 
     map= viskort('map', ticket);
     await initAdgangsadresser;
-    await initAdresser;
+   // await initAdresser;
     setInterval(function () {
       $.ajax({url: host+"/replikering/senestesekvensnummer", dataType: "jsonp"})
       .then( function ( seneste ) {
