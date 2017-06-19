@@ -16,14 +16,55 @@ $(function() {
     }
   }
 
-  var initAdgangsadresser= function() {
+
+  var initAdresser = new Promise(function(resolve, reject) {
     var options= {};
     options.data= {tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()};
-    options.url= host + 'replikering/adgangsadresser/haendelser';
+    options.url= host + 'replikering/adresser/haendelser';
     corsdataoptions(options);
     $.ajax(options)
-    .then( function ( data ) {
-      visAdgangsadresser(data,true);
+    .done( function ( data ) {
+      visAdresser(data,true);
+      resolve();
+    })
+    .fail(function( jqXHR, textStatus, errorThrown ) {
+      reject(textSatus);
+    });
+  });
+
+  // var initAdgangsadresser= function() {
+  //   var options= {};
+  //   options.data= {tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()};
+  //   options.url= host + 'replikering/adgangsadresser/haendelser';
+  //   corsdataoptions(options);
+  //   $.ajax(options)
+  //   .then( function ( data ) {
+  //     visAdgangsadresser(data,true);
+  //     setInterval(function () {
+  //         $.ajax({url: host+"/replikering/senestesekvensnummer", dataType: "jsonp"})
+  //         .then( function ( seneste ) {
+  //           if (seneste.sekvensnummer > sekvensnummer) { 
+  //             var snr= sekvensnummer+1;            
+  //             sekvensnummer= seneste.sekvensnummer;
+  //             hentAdgangsadresser(snr,seneste.sekvensnummer); 
+  //           }
+  //         });
+  //       }, 60000);
+  //   })
+  // }
+  var danUrl= function (path, query) {    
+    var url = new URL(path);
+    Object.keys(query).forEach(key => url.searchParams.append(key, query[key]));
+    return url;
+  }
+
+
+  var initAdgangsadresser= function() {
+    var url = danUrl(host + 'replikering/adgangsadresser/haendelser', {tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()});
+    fetch(url).then(function ( response ) {
+      return response.json();
+    }).then(function (adgangsadresser) {
+      visAdgangsadresser(adgangsadresser,true);
       setInterval(function () {
           $.ajax({url: host+"/replikering/senestesekvensnummer", dataType: "jsonp"})
           .then( function ( seneste ) {
@@ -36,6 +77,7 @@ $(function() {
         }, 60000);
     })
   }
+
 
   var hentAdgangsadresser= function(fra,til) {
     var options= {};
@@ -110,6 +152,7 @@ $(function() {
   .then( function ( ticket ) {
     map= viskort('map', ticket);
     initAdgangsadresser();
+    initAdresser.then(() => alert('Succes')).catch((error) => alert('error'));
   });
 
 });
