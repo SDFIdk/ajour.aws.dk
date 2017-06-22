@@ -1,3 +1,8 @@
+var maxBounds= [
+  [57.751949, 15.193240],
+  [54.559132, 8.074720]
+];
+
 var viskort = function(id,ticket) {
 	var crs = new L.Proj.CRS('EPSG:25832',
     '+proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs', 
@@ -8,10 +13,9 @@ var viskort = function(id,ticket) {
 
   var map = new L.Map(id, {
       crs: crs,
-      maxBounds: [
-		    [57.751949, 15.193240],
-		    [54.559132, 8.074720]
-		  ]
+      minZoom: 2,
+      maxZoom: 14,
+      maxBounds: maxBounds
   });
 
 	var skaermkortdaempet = L.tileLayer.wms('https://kortforsyningen.kms.dk/service', 
@@ -26,25 +30,22 @@ var viskort = function(id,ticket) {
  		}
  	).addTo(map);
 
-	map.fitBounds([
-  	[57.751949, 15.193240],
-  	[54.559132, 8.074720]
-	]);
+	map.fitBounds(maxBounds);
 
 	return map;
 };
 
 
-  proj4.defs([
-    [
-      'EPSG:4326',
-      '+title=WGS 84 (long/lat) +proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees'],
-    [
-        'EPSG:25832',
-        '+proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs'
-    ]
-  ]);
+proj4.defs([
+  [
+    'EPSG:4326',
+    '+title=WGS 84 (long/lat) +proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees'],
+  [
+      'EPSG:25832',
+      '+proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs'
+  ]
+]);
 
-  var etrs89towgs84= function(x,y) {
-  	  return proj4('EPSG:25832','EPSG:4326', {x:x, y:y});  
-  }
+var etrs89towgs84= function(x,y) {
+	  return proj4('EPSG:25832','EPSG:4326', {x:x, y:y});  
+}
