@@ -4,7 +4,8 @@ $(function() {
     , fra= moment().startOf('day')
     , til= moment()
     , sekvensnummer= 0
-    , host= 'http://dawa.aws.dk/';
+    , host= 'http://dawa.aws.dk/'
+    , markersLayer;
 
 
   var danUrl= function (path, query) {    
@@ -13,18 +14,11 @@ $(function() {
     return url;
   }
 
-  var initAdresser = function() {
-    return new Promise(async function(resolve, reject) {
-      let url = danUrl(host + 'replikering/adresser/haendelser', {tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()});
-      let response = await fetch(url);
-      if (!response.ok) {
-        reject(response.status);
-        return;
-      }
-      let adresser = await response.json();
-      visAdresser(adresser,false);
-      resolve();
-    });
+  var initAdresser = async function() {
+    let url = danUrl(host + 'replikering/adresser/haendelser', {tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()});
+    let response = await fetch(url);
+    let adresser = await response.json();
+    visAdresser(adresser,false);
   }
 
   var hentAdresser= async function(fra,til) {
@@ -38,16 +32,42 @@ $(function() {
   var visAdresser= function(hændelser, dopopup) {
     var promises= [];    
     for (var i= 0; i<hændelser.length; i++) {
-      let url = danUrl(host+"adresser", {id: hændelser[i].data.id, struktur: "mini"});
-      promises.push(fetch(url));
-      if (sekvensnummer < hændelser[i].sekvensnummer) sekvensnummer= hændelser[i].sekvensnummer;
+      promises.push(getAdressebetegnelse(hændelser[i]));
     }
     begrænssamtidige(promises, hændelser, 0, 10, visAdresse, dopopup);
   }
 
+  var getAdressebetegnelse= function(hændelse) {
+
+    return new Promise(async function(resolve, reject) { 
+      let response= await fetch(danUrl(host+"adresser", {id: hændelse.data.id, struktur: 'mini'}));
+      let adresser;
+      if (response.ok) {
+        adresser= await response.json();
+        if (adresser.length > 0) {
+          resolve({ok: true, betegnelse: formatAdresse(adresser[0]), x: adresser[0].x, y:adresser[0].y});
+          return;
+        }
+      }
+      response= await fetch(danUrl(host+"adgangsadresser", {id: hændelse.data.adgangsadresseid, struktur: 'mini'}));
+      if (response.ok) {
+        let adgangsadresser= await response.json();
+        if (adgangsadresser.length > 0) {
+          let adgangsadresse= adgangsadresser[0];
+          adgangsadresse.etage= hændelse.data.etage;
+          adgangsadresse.dør= hændelse.data.dør;
+          resolve({ok: true, betegnelse: formatAdresse(adgangsadresse), x: adgangsadresse.x, y:adgangsadresse.y});
+          return;
+        }
+      }
+      resolve({ok: false});
+    });
+  } 
+
   var adresserid;
   var visAdresse= function(adresse, hændelse, dopopup) { 
-    if (hændelse.operation === 'update' && adgangsadresserid === hændelse.data.id) return;
+    if (!adresse.ok) return;
+    if (hændelse.operation === 'update' && adresserid === hændelse.data.id) return;
     adresserid= hændelse.data.id;
     var color= 'blue'   
       , operation= 'ukendt';
@@ -67,7 +87,7 @@ $(function() {
       break;
     }
     var marker= L.circleMarker(L.latLng(adresse.y, adresse.x), {color: color, fillColor: color, stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
-    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/replikering/adresser/haendelser?id="+hændelse.data.id+"'>" + formatAdresse(adresse) + "</a>"),{autoPan: true});
+    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/replikering/adresser/haendelser?id="+hændelse.data.id+"'>" + adresse.betegnelse + "</a>"),{autoPan: true});
     
     if (dopopup) {
       map.flyTo(L.latLng(adresse.y, adresse.x),12);
@@ -75,18 +95,11 @@ $(function() {
     }
   }
 
-  var initAdgangsadresser= function() {
-    return new Promise(async function(resolve, reject) {
-      let url = danUrl(host + 'replikering/adgangsadresser/haendelser', {tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()});
-      let response = await fetch(url);
-      if (!response.ok) {
-        reject(response.status);
-        return;
-      }
-      let adgangsadresser = await response.json();
-      visAdgangsadresser(adgangsadresser,false);
-      resolve();
-    });
+  var initAdgangsadresser= async function() {
+    let url = danUrl(host + 'replikering/adgangsadresser/haendelser', {tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()});
+    let response = await fetch(url);
+    let adgangsadresser = await response.json();
+    visAdgangsadresser(adgangsadresser,false);
   }
 
   var hentAdgangsadresser= async function(fra,til) {
@@ -95,6 +108,14 @@ $(function() {
     if (!response.ok) throw response.status
     let adgangsadresser = await response.json();
     visAdgangsadresser(adgangsadresser,true);
+  }
+
+  var visAdgangsadresser= function(hændelser, dopopup) {
+    var promises= [];    
+    for (var i= 0; i<hændelser.length; i++) {
+      promises.push(getAdgangsadressebetegnelse(hændelser[i]));
+    }
+    begrænssamtidige(promises, hændelser, 0, 5, visAdgangsadresse, dopopup);
   }
 
   var getAdgangsadressebetegnelse= function(hændelse) {
@@ -123,16 +144,6 @@ $(function() {
     return fraVejstykke;
   } 
 
-
-  var visAdgangsadresser= function(hændelser, dopopup) {
-    var promises= [];    
-    for (var i= 0; i<hændelser.length; i++) {
-      promises.push(getAdgangsadressebetegnelse(hændelser[i]));
-      if (sekvensnummer < hændelser[i].sekvensnummer) sekvensnummer= hændelser[i].sekvensnummer;
-    }
-    begrænssamtidige(promises, hændelser, 0, 5, visAdgangsadresse, dopopup);
-  }
-
   var adgangsadresserid;
   var visAdgangsadresse= function(adgangsadresse, hændelse, dopopup) { 
     if (hændelse.operation === 'update' && adgangsadresserid === hændelse.data.id) return;
@@ -158,15 +169,10 @@ $(function() {
     var wgs84= etrs89towgs84(hændelse.data.etrs89koordinat_øst, hændelse.data.etrs89koordinat_nord);
     var marker= L.circleMarker(L.latLng(wgs84.y, wgs84.x), {color: color, fillColor: color, stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
     var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/replikering/adgangsadresser/haendelser?id="+hændelse.data.id+"'>" + adgangsadresse.betegnelse + "</a>"),{autoPan: true});
-   
+    markersLayer.addLayer(marker); 
     if (dopopup) {
-      try {
       map.flyTo(L.latLng(wgs84.y, wgs84.x),12);
       popup.openPopup();
-      }
-      catch(e) {
-        let s= e;
-      }
     }
   }
 
@@ -182,24 +188,39 @@ $(function() {
     begrænssamtidige(promises,hændelser,start+længde,længde,vis,dopopup);
   }
 
-  async function main() {
+  async function senestesekvensnummer() {   
+    let response = await fetch(host+"/replikering/senestesekvensnummer");
+    let seneste= await response.json(); 
+    return seneste.sekvensnummer;
+  }
+
+  async function main() { 
+    markersLayer = new L.LayerGroup();   
+    fra= moment().startOf('day');
+    til= moment();
     let response= await fetch('/getticket');    
     let ticket = await response.text(); 
     map= viskort('map', ticket);
-    await initAdgangsadresser();
+    markersLayer.addTo(map);
+    sekvensnummer= await senestesekvensnummer();
+    await Promise.all([initAdgangsadresser(), initAdresser()]);
     setInterval(async function () {
-      let response = await fetch(host+"/replikering/senestesekvensnummer");
-      let seneste= await response.json();
-      if (seneste.sekvensnummer > sekvensnummer) { 
-        var snr= sekvensnummer+1;            
-        sekvensnummer= seneste.sekvensnummer;
-        hentAdgangsadresser(snr,seneste.sekvensnummer); 
+      if (til.date() != moment().date()) {
+        fra= moment().startOf('day');
+        til= moment(); 
+        markersLayer.clearLayers(); 
+        await Promise.all([initAdgangsadresser(), initAdresser()]);
       }
       else {
-        map.flyToBounds([
-          [57.751949, 15.193240],
-          [54.559132, 8.074720]
-        ]);
+        let seneste= await senestesekvensnummer();
+        if (seneste > sekvensnummer) { 
+          let snr= sekvensnummer+1;            
+          sekvensnummer= seneste;
+          await Promise.all([hentAdgangsadresser(snr,seneste),hentAdresser(snr,seneste)]); 
+        }
+        else {
+          map.flyToBounds(maxBounds);
+        }
       }
     }, 15000);
   }
