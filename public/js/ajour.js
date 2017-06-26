@@ -37,10 +37,12 @@ $(function() {
     var promises= [];    
     for (var i= 0; i<hændelser.length; i++) {
       promises.push(getAdressebetegnelse(hændelser[i]));
+    }    
+    if (hændelser.length > 0) {
+      adresseajourføringer= adresseajourføringer + hændelser.length;
+      info.update();
+      begrænssamtidige(promises, hændelser, 0, 10, visAdresse, dopopup);
     }
-    adresseajourføringer= adresseajourføringer + hændelser.length;
-    info.update();
-    begrænssamtidige(promises, hændelser, 0, 10, visAdresse, dopopup);
   }
 
   var getAdressebetegnelse= function(hændelse) {
@@ -121,9 +123,11 @@ $(function() {
     for (var i= 0; i<hændelser.length; i++) {
       promises.push(getAdgangsadressebetegnelse(hændelser[i]));
     }
-    adgangsadresseajourføringer= adgangsadresseajourføringer + hændelser.length;
-    info.update();
-    begrænssamtidige(promises, hændelser, 0, 5, visAdgangsadresse, dopopup);
+    if (hændelser.length > 0) {
+      adgangsadresseajourføringer= adgangsadresseajourføringer + hændelser.length;
+      info.update();
+      begrænssamtidige(promises, hændelser, 0, 5, visAdgangsadresse, dopopup);
+    }
   }
 
   var getAdgangsadressebetegnelse= function(hændelse) {
