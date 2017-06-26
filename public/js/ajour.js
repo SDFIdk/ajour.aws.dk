@@ -1,3 +1,5 @@
+"use strict"
+
 $(function() {
 
   var map
@@ -5,7 +7,9 @@ $(function() {
     , til= moment()
     , sekvensnummer= 0
     , host= 'http://dawa.aws.dk/'
-    , markersLayer;
+    , markersLayer
+    , adresseajourføringer= 0
+    , adgangsadresseajourføringer= 0;
 
 
   var danUrl= function (path, query) {    
@@ -34,6 +38,8 @@ $(function() {
     for (var i= 0; i<hændelser.length; i++) {
       promises.push(getAdressebetegnelse(hændelser[i]));
     }
+    adresseajourføringer= adresseajourføringer + hændelser.length;
+    info.update();
     begrænssamtidige(promises, hændelser, 0, 10, visAdresse, dopopup);
   }
 
@@ -115,6 +121,8 @@ $(function() {
     for (var i= 0; i<hændelser.length; i++) {
       promises.push(getAdgangsadressebetegnelse(hændelser[i]));
     }
+    adgangsadresseajourføringer= adgangsadresseajourføringer + hændelser.length;
+    info.update();
     begrænssamtidige(promises, hændelser, 0, 5, visAdgangsadresse, dopopup);
   }
 
@@ -122,17 +130,23 @@ $(function() {
 
     let fraVejstykke= new Promise(async function(resolve, reject) {
      
+      if (!hændelse.data.vejkode || !hændelse.data.postnr) {
+        resolve({betegnelse: "Ufuldstændig adressebetegnelse"});
+        return;
+      }
       let vresponse, presponse;     
       [vresponse, presponse]= await Promise.all([
           fetch(danUrl(host+"vejstykker", {kode: hændelse.data.vejkode, kommunekode: hændelse.data.kommunekode})),
           fetch(danUrl(host+"postnumre", {nr: hændelse.data.postnr}))
-        ])
-       if (!vresponse.ok) {
-        reject(vresponse.status);
+      ])
+      if (!vresponse.ok) {
+        resolve({betegnelse: "Ufuldstændig adressebetegnelse (vejnavn)"});
+        //reject(vresponse.status);
         return;
       }
        if (!presponse.ok) {
-        reject(presponse.status);
+        resolve({betegnelse: "Ufuldstændig adressebetegnelse (postnummer)"});
+        //reject(presponse.status);
         return;
       }
       let vejstykker, postnumre;
@@ -194,6 +208,41 @@ $(function() {
     return seneste.sekvensnummer;
   }
 
+  var info = L.control();
+
+  info.onAdd = function (map) {
+      this._div = L.DomUtil.create('div', 'info'); 
+      this.update();
+      return this._div;
+  };
+
+  // method that we will use to update the control based on feature properties passed
+  info.update = function () {
+      this._div.innerHTML = '<h3>Dagens ajourføringer af adresser og adgangsadresser</h3>'+
+        '<p>' + fra.format('DD.MM.YYYY HH:mm:ss')  + ' - ' + moment().format('DD.MM.YYYY HH:mm:ss') + '</p>' +
+        '<p>' + adresseajourføringer + ' adresseajourføringer</p>' +
+        '<p>' + adgangsadresseajourføringer + ' adgangsadresseajourføringer</p>';
+        ;
+    
+  };
+
+  var legend = L.control({position: 'bottomright'});
+
+  legend.onAdd = function (map) {
+
+    var div = L.DomUtil.create('div', 'info legend');
+
+    
+    div.innerHTML=
+            '<p><i style="background: red"></i> Oprettet</p>' +
+            '<p><i style="background: orange"></i> Ændret</p>' +
+            '<p><i style="background: black"></i> Nedlagt</p>';
+
+    return div;
+  };
+
+
+
   async function main() { 
     markersLayer = new L.LayerGroup();   
     fra= moment().startOf('day');
@@ -201,6 +250,8 @@ $(function() {
     let response= await fetch('/getticket');    
     let ticket = await response.text(); 
     map= viskort('map', ticket);
+    info.addTo(map);
+    legend.addTo(map);
     markersLayer.addTo(map);
     sekvensnummer= await senestesekvensnummer();
     await Promise.all([initAdgangsadresser(), initAdresser()]);
