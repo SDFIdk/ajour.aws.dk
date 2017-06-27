@@ -222,10 +222,10 @@ $(function() {
 
   // method that we will use to update the control based on feature properties passed
   info.update = function () {
-      this._div.innerHTML = '<h3>Dagens ajourføringer af adresser og adgangsadresser</h3>'+
-        '<p>' + fra.format('DD.MM.YYYY HH:mm:ss')  + ' - ' + moment().format('DD.MM.YYYY HH:mm:ss') + '</p>' +
-        '<p>' + adresseajourføringer + ' adresseajourføringer</p>' +
-        '<p>' + adgangsadresseajourføringer + ' adgangsadresseajourføringer</p>';
+      this._div.innerHTML = '<h3>Dagens adresse- og adgangsadresseajourføringer</h3>'+
+        '<p>' + fra.local().format('DD.MM.YYYY HH:mm:ss')  + ' - ' + moment().local().format('DD.MM.YYYY HH:mm:ss') + '</p>' +
+        '<p>' + adresseajourføringer + ' adresser</p>' +
+        '<p>' + adgangsadresseajourføringer + ' adgangsadresser</p>';
         ;
     
   };
@@ -245,9 +245,7 @@ $(function() {
     return div;
   };
 
-
-
-  async function main() { 
+  async function init() {     
     markersLayer = new L.LayerGroup();   
     fra= moment().startOf('day');
     til= moment();
@@ -258,13 +256,15 @@ $(function() {
     legend.addTo(map);
     markersLayer.addTo(map);
     sekvensnummer= await senestesekvensnummer();
-    await Promise.all([initAdgangsadresser(), initAdresser()]);
+    await initAdresser();
+    await initAdgangsadresser();
+  }
+
+  async function main() {
+    init();
     setInterval(async function () {
       if (til.date() != moment().date()) {
-        fra= moment().startOf('day');
-        til= moment(); 
-        markersLayer.clearLayers(); 
-        await Promise.all([initAdgangsadresser(), initAdresser()]);
+        init();
       }
       else {
         let seneste= await senestesekvensnummer();
