@@ -155,8 +155,12 @@ $(function() {
       }
       let vejstykker, postnumre;
       [vejstykker, postnumre] = await Promise.all([vresponse.json(), presponse.json()]);
-      let adgangsadresse= {vejnavn: vejstykker[0].navn, husnr: hændelse.data.husnr, supplerendebynavn: hændelse.data.supplerendebynavn, postnr: hændelse.data.postnr, postnrnavn: postnumre[0].navn};
-      resolve({betegnelse: formatAdgangsadresse(adgangsadresse)});
+      if (vejstykker[0] && postnumre[0]) {
+        let adgangsadresse= {vejnavn: vejstykker[0].navn, husnr: hændelse.data.husnr, supplerendebynavn: hændelse.data.supplerendebynavn, postnr: hændelse.data.postnr, postnrnavn: postnumre[0].navn};
+        resolve({betegnelse: formatAdgangsadresse(adgangsadresse)});
+      }
+      resolve({betegnelse: "Ufuldstændig adressebetegnelse"});
+      return;
     });
 
     return fraVejstykke;
@@ -222,7 +226,7 @@ $(function() {
 
   // method that we will use to update the control based on feature properties passed
   info.update = function () {
-      this._div.innerHTML = '<h3>Dagens adresse- og adgangsadresseajourføringer</h3>'+
+      this._div.innerHTML = '<h3>Ajourføring af Danmarks Adresser</h3>'+
         '<p>' + fra.local().format('DD.MM.YYYY HH:mm:ss')  + ' - ' + moment().local().format('DD.MM.YYYY HH:mm:ss') + '</p>' +
         '<p>' + adresseajourføringer + ' adresser</p>' +
         '<p>' + adgangsadresseajourføringer + ' adgangsadresser</p>';
@@ -245,7 +249,9 @@ $(function() {
     return div;
   };
 
-  async function init() {     
+  async function init() { 
+    adresseajourføringer= 0;
+    adgangsadresseajourføringer= 0;    
     markersLayer = new L.LayerGroup();   
     fra= moment().startOf('day');
     til= moment();

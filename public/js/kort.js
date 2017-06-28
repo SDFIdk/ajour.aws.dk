@@ -18,6 +18,17 @@ var viskort = function(id,ticket) {
       maxBounds: maxBounds
   });
 
+	var skaermkort = L.tileLayer.wms('https://kortforsyningen.kms.dk/service', 
+		{
+			format: 'image/png',
+			maxZoom: 14,
+			minZoom: 2,
+			ticket: ticket,
+			servicename: 'topo_skaermkort',
+  		attribution: 'Data</a> fra <a href="http://dawa.aws.dk">DAWA</a> | Map data &copy;  <a href="http://sdfe.dk">SDFE</a>'
+ 		}
+ 	).addTo(map);
+
 	var skaermkortdaempet = L.tileLayer.wms('https://kortforsyningen.kms.dk/service', 
 		{
 			format: 'image/png',
@@ -29,6 +40,63 @@ var viskort = function(id,ticket) {
   		layers: 'dtk_skaermkort_daempet'
  		}
  	).addTo(map);
+
+ 	var matrikelkort = L.tileLayer.wms('https://{s}.services.kortforsyningen.dk/service', {
+    service: 'WMS',
+    transparent: true,
+    servicename: 'mat',
+    layers: 'Centroide,MatrikelSkel,OptagetVej',
+    version: '1.1.0',
+    ticket: ticket,
+    styles: 'sorte_centroider,sorte_skel,default',
+    format: 'image/png',
+    attribution: 'Geodatastyrelsen',
+    continuousWorld: true,
+    minZoom: 9
+  });
+
+ 	 var baselayers = {
+    "Skærmkort": skaermkort,
+    "Skærmkort - dæmpet": skaermkortdaempet
+    // "Flyfoto": ortofoto,
+    // "Højdemodel - terræn": dhmTerræn,
+    // "Højdemodel - overflade": dhmOverflade
+   // "Historisk 1928-1940": historisk1928
+  };
+
+  var overlays = {
+    "Matrikelkort": matrikelkort
+    // "Kommunekort": kommunekort,
+    // "Postnummerkort": postnrkort,
+    // "Adressekort": adressekort
+  };
+
+  L.control.layers(baselayers, overlays, {position: 'bottomleft'}).addTo(map);
+  //L.control.search().addTo(map);
+
+  map.on('baselayerchange', function (e) {
+    if (e.name === 'Skærmkort') {
+        matrikelkort.setParams({
+            styles: 'sorte_centroider,sorte_skel,default'
+        });
+        // postnrkort.setParams({
+        //     styles: 'default'
+        // });
+        // kommunekort.setParams({
+        //     styles: 'default'
+        // });
+    } else if (e.name === 'Flyfoto') {
+        matrikelkort.setParams({
+            styles: 'gule_centroider,gule_skel,Gul_OptagetVej,default'
+        });
+        // postnrkort.setParams({
+        //     styles: 'yellow'
+        // });
+        // kommunekort.setParams({
+        //     styles: 'yellow'
+        // });
+    }
+  });
 
 	map.fitBounds(maxBounds);
 
