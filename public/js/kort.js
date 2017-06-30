@@ -18,83 +18,77 @@ var viskort = function(id,ticket) {
       maxBounds: maxBounds
   });
 
-	var skaermkort = L.tileLayer.wms('https://kortforsyningen.kms.dk/service', 
-		{
-			format: 'image/png',
-			maxZoom: 14,
-			minZoom: 2,
-			ticket: ticket,
-			servicename: 'topo_skaermkort',
-  		attribution: 'Data</a> fra <a href="http://dawa.aws.dk">DAWA</a> | Map data &copy;  <a href="http://sdfe.dk">SDFE</a>'
- 		}
- 	).addTo(map);
+  function danKort(service,layer,styles,transparent) {
+		return L.tileLayer.wms('https://kortforsyningen.kms.dk/service', 
+			{
+				format: 'image/png',
+				maxZoom: 14,
+				minZoom: 2,
+				ticket: ticket,
+				servicename: service,
+	  		attribution: 'Data</a> fra <a href="http://dawa.aws.dk">DAWA</a> | Map data &copy;  <a href="http://sdfe.dk">SDFE</a>',
+	  		layers: layer,
+	  		styles: styles,
+	  		transparent: transparent
+	 		}
+ 		);
+	}
 
-	var skaermkortdaempet = L.tileLayer.wms('https://kortforsyningen.kms.dk/service', 
-		{
-			format: 'image/png',
-			maxZoom: 14,
-			minZoom: 2,
-			ticket: ticket,
-			servicename: 'topo_skaermkort',
-  		attribution: 'Data</a> fra <a href="http://dawa.aws.dk">DAWA</a> | Map data &copy;  <a href="http://sdfe.dk">SDFE</a>',
-  		layers: 'dtk_skaermkort_daempet'
- 		}
- 	).addTo(map);
+ 	var skaermkort= danKort('topo_skaermkort', 'dtk_skaermkort', 'default', false).addTo(map)
+ 		, skaermkortdaempet= danKort('topo_skaermkort', 'dtk_skaermkort_daempet', 'default', false)
+ 		, ortofoto= danKort('orto_foraar', 'orto_foraar', 'default', false)
+ 		, historisk1842til1899= danKort('topo20_hoeje_maalebordsblade', 'dtk_hoeje_maalebordsblade', 'default', false)
+ 		, matrikelkort= danKort('mat', 'Centroide,MatrikelSkel,OptagetVej','sorte_centroider,sorte_skel,default','true')
+ 		, postnrkort= danKort('dagi', 'postdistrikt', 'default','true')
+ 		, kommunekort= danKort('dagi', 'kommune', 'default','true');
 
- 	var matrikelkort = L.tileLayer.wms('https://{s}.services.kortforsyningen.dk/service', {
-    service: 'WMS',
-    transparent: true,
-    servicename: 'mat',
-    layers: 'Centroide,MatrikelSkel,OptagetVej',
-    version: '1.1.0',
-    ticket: ticket,
-    styles: 'sorte_centroider,sorte_skel,default',
-    format: 'image/png',
-    attribution: 'Geodatastyrelsen',
-    continuousWorld: true,
-    minZoom: 9
-  });
+	var adressekort = L.tileLayer.wms('https://kort.aws.dk/geoserver/aws4/wms', {
+	    transparent: true,
+	    layers: 'adgangsadresser',
+	    format: 'image/png',
+	    continuousWorld: true
+	  });
 
  	 var baselayers = {
     "Skærmkort": skaermkort,
-    "Skærmkort - dæmpet": skaermkortdaempet
-    // "Flyfoto": ortofoto,
-    // "Højdemodel - terræn": dhmTerræn,
-    // "Højdemodel - overflade": dhmOverflade
-   // "Historisk 1928-1940": historisk1928
+    "Skærmkort - dæmpet": skaermkortdaempet,
+    "Flyfoto": ortofoto,
+   	"Historisk 1842-1899": historisk1842til1899
   };
 
   var overlays = {
-    "Matrikelkort": matrikelkort
-    // "Kommunekort": kommunekort,
-    // "Postnummerkort": postnrkort,
-    // "Adressekort": adressekort
+    "Matrikelkort": matrikelkort,
+     "Kommunekort": kommunekort,
+     "Postnummerkort": postnrkort,
+     "Adressekort": adressekort
   };
 
   L.control.layers(baselayers, overlays, {position: 'bottomleft'}).addTo(map);
   //L.control.search().addTo(map);
 
   map.on('baselayerchange', function (e) {
-    if (e.name === 'Skærmkort') {
+    if (e.name === 'Skærmkort' ||
+    		e.name === "Skærmkort - dæmpet" ||
+    		e.name === "Historisk 1842-1899") {
         matrikelkort.setParams({
             styles: 'sorte_centroider,sorte_skel,default'
         });
-        // postnrkort.setParams({
-        //     styles: 'default'
-        // });
-        // kommunekort.setParams({
-        //     styles: 'default'
-        // });
+        postnrkort.setParams({
+            styles: 'default'
+        });
+        kommunekort.setParams({
+            styles: 'default'
+        });
     } else if (e.name === 'Flyfoto') {
         matrikelkort.setParams({
             styles: 'gule_centroider,gule_skel,Gul_OptagetVej,default'
         });
-        // postnrkort.setParams({
-        //     styles: 'yellow'
-        // });
-        // kommunekort.setParams({
-        //     styles: 'yellow'
-        // });
+        postnrkort.setParams({
+            styles: 'yellow'
+        });
+        kommunekort.setParams({
+            styles: 'yellow'
+        });
     }
   });
 
