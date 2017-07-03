@@ -269,7 +269,8 @@ $(function() {
   async function main() {
     init();
     setInterval(async function () {
-      if (til.date() != moment().date()) {
+      if (til.local().date() != moment().local().date()) {
+        map.remove();
         init();
       }
       else {
