@@ -37,6 +37,7 @@ var viskort = function(id,ticket) {
  	var skaermkort= danKort('topo_skaermkort', 'dtk_skaermkort', 'default', false).addTo(map)
  		, skaermkortdaempet= danKort('topo_skaermkort', 'dtk_skaermkort_daempet', 'default', false)
  		, ortofoto= danKort('orto_foraar', 'orto_foraar', 'default', false)
+ 		, quickortofoto= danKort('orto_foraar_temp', 'quickorto_2017_10cm', 'default', false)
  		, historisk1842til1899= danKort('topo20_hoeje_maalebordsblade', 'dtk_hoeje_maalebordsblade', 'default', false)
  		, matrikelkort= danKort('mat', 'Centroide,MatrikelSkel,OptagetVej','sorte_centroider,sorte_skel,default','true')
  		, postnrkort= danKort('dagi', 'postdistrikt', 'default','true')
@@ -52,15 +53,16 @@ var viskort = function(id,ticket) {
  	 var baselayers = {
     "Skærmkort": skaermkort,
     "Skærmkort - dæmpet": skaermkortdaempet,
-    "Flyfoto": ortofoto,
+    "Ortofoto": ortofoto,
+    "Quick ortofoto": quickortofoto,
    	"Historisk 1842-1899": historisk1842til1899
   };
 
   var overlays = {
-    "Matrikelkort": matrikelkort,
-     "Kommunekort": kommunekort,
-     "Postnummerkort": postnrkort,
-     "Adressekort": adressekort
+   	"Matrikelkort": matrikelkort,
+   	"Kommunekort": kommunekort,
+   	"Postnummerkort": postnrkort,
+   	"Adressekort": adressekort
   };
 
   L.control.layers(baselayers, overlays, {position: 'bottomleft'}).addTo(map);
