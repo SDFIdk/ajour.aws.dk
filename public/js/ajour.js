@@ -2,6 +2,8 @@
 
 $(function() {
 
+  var moment= require('moment');
+
   var map
     , fra= moment().startOf('day')
     , til= moment()
