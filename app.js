@@ -7,12 +7,12 @@ app.use(express.static(__dirname + '/public'));
 
 app.get('/', function (req, res) {
   console.log('get /');
-  res.sendFile(__dirname + "/public/index.html", function (err) {
+  res.sendFile(__dirname + "/public/dist/index.html", function (err) {
     if (err) {
       console.log(err);
     }
     else {
-      console.log('Sent: info.html');
+      console.log('Sent: index.html');
     }
   });
 });

@@ -2,7 +2,9 @@
 
 $(function() {
 
-  var moment= require('moment');
+  var moment= require('moment')
+    , util= require("./util.js")
+    , kort= require("./kort.js");
 
   var map
     , fra= moment().startOf('day')
@@ -55,7 +57,7 @@ $(function() {
       if (response.ok) {
         adresser= await response.json();
         if (adresser.length > 0) {
-          resolve({ok: true, betegnelse: formatAdresse(adresser[0]), x: adresser[0].x, y:adresser[0].y});
+          resolve({ok: true, betegnelse: util.formatAdresse(adresser[0]), x: adresser[0].x, y:adresser[0].y});
           return;
         }
       }
@@ -66,7 +68,7 @@ $(function() {
           let adgangsadresse= adgangsadresser[0];
           adgangsadresse.etage= hændelse.data.etage;
           adgangsadresse.dør= hændelse.data.dør;
-          resolve({ok: true, betegnelse: formatAdresse(adgangsadresse), x: adgangsadresse.x, y:adgangsadresse.y});
+          resolve({ok: true, betegnelse: util.formatAdresse(adgangsadresse), x: adgangsadresse.x, y:adgangsadresse.y});
           return;
         }
       }
@@ -159,7 +161,7 @@ $(function() {
       [vejstykker, postnumre] = await Promise.all([vresponse.json(), presponse.json()]);
       if (vejstykker[0] && postnumre[0]) {
         let adgangsadresse= {vejnavn: vejstykker[0].navn, husnr: hændelse.data.husnr, supplerendebynavn: hændelse.data.supplerendebynavn, postnr: hændelse.data.postnr, postnrnavn: postnumre[0].navn};
-        resolve({betegnelse: formatAdgangsadresse(adgangsadresse)});
+        resolve({betegnelse: util.formatAdgangsadresse(adgangsadresse)});
       }
       resolve({betegnelse: "Ufuldstændig adressebetegnelse"});
       return;
@@ -190,7 +192,7 @@ $(function() {
       break;
     }
 
-    var wgs84= etrs89towgs84(hændelse.data.etrs89koordinat_øst, hændelse.data.etrs89koordinat_nord);
+    var wgs84= kort.etrs89towgs84(hændelse.data.etrs89koordinat_øst, hændelse.data.etrs89koordinat_nord);
     var marker= L.circleMarker(L.latLng(wgs84.y, wgs84.x), {color: color, fillColor: color, stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
     var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/replikering/adgangsadresser/haendelser?id="+hændelse.data.id+"'>" + adgangsadresse.betegnelse + "</a>"),{autoPan: true});
     markersLayer.addLayer(marker); 
@@ -259,7 +261,7 @@ $(function() {
     til= moment();
     let response= await fetch('/getticket');    
     let ticket = await response.text(); 
-    map= viskort('map', ticket);
+    map= kort.viskort('map', ticket);
     info.addTo(map);
     legend.addTo(map);
     markersLayer.addTo(map);
@@ -283,7 +285,7 @@ $(function() {
           await Promise.all([hentAdgangsadresser(snr,seneste),hentAdresser(snr,seneste)]); 
         }
         else {
-          map.flyToBounds(maxBounds);
+          map.flyToBounds(kort.maxBounds);
         }
       }
     }, 15000);
