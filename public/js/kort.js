@@ -3,7 +3,9 @@ var maxBounds= [
   [54.559132, 8.074720]
 ];
 
-var viskort = function(id,ticket) {
+exports.maxBounds= maxBounds;
+
+exports.viskort = function(id,ticket) {
 	var crs = new L.Proj.CRS('EPSG:25832',
     '+proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs', 
     {
@@ -29,7 +31,8 @@ var viskort = function(id,ticket) {
 	  		attribution: 'Data</a> fra <a href="http://dawa.aws.dk">DAWA</a> | Map data &copy;  <a href="http://sdfe.dk">SDFE</a>',
 	  		layers: layer,
 	  		styles: styles,
-	  		transparent: transparent
+	  		transparent: transparent,
+	  		tiled: false
 	 		}
  		);
 	}
@@ -110,6 +113,6 @@ proj4.defs([
   ]
 ]);
 
-var etrs89towgs84= function(x,y) {
+exports.etrs89towgs84= function(x,y) {
 	  return proj4('EPSG:25832','EPSG:4326', {x:x, y:y});  
 }
