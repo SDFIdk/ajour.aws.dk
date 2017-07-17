@@ -15620,7 +15620,7 @@ return zhTw;
 "use strict";
 
 
-$(function() {
+//function() {
 
   var moment= __webpack_require__(0)
     , util= __webpack_require__(119)
@@ -15913,7 +15913,7 @@ $(function() {
 
   main();
 
-});
+//}();
 
 /***/ }),
 /* 117 */
@@ -16219,7 +16219,20 @@ exports.formatAdresse= function (mini, enlinje) {
 
 /***/ }),
 /* 120 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+proj4.defs([
+  [
+    'EPSG:4326',
+    '+title=WGS 84 (long/lat) +proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees'],
+  [
+      'EPSG:25832',
+      '+proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs'
+  ]
+]);
 
 var maxBounds= [
   [57.751949, 15.193240],
@@ -16326,15 +16339,6 @@ exports.viskort = function(id,ticket) {
 };
 
 
-proj4.defs([
-  [
-    'EPSG:4326',
-    '+title=WGS 84 (long/lat) +proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees'],
-  [
-      'EPSG:25832',
-      '+proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs'
-  ]
-]);
 
 exports.etrs89towgs84= function(x,y) {
 	  return proj4('EPSG:25832','EPSG:4326', {x:x, y:y});  

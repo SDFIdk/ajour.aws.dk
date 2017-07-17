@@ -1,10 +1,10 @@
 "use strict"
 
-$(function() {
+//function() {
 
   var moment= require('moment')
-    , util= require("./util.js")
-    , kort= require("./kort.js");
+    , util= require("dawa-util")
+    , kort= require("dawa-kort");
 
   var map
     , fra= moment().startOf('day')
@@ -293,4 +293,4 @@ $(function() {
 
   main();
 
-});
+//}();
