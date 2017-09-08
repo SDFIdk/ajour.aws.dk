@@ -52,10 +52,13 @@ app.get('/getticket', function (req, res, next) {
 }); 
 
 var usr= process.argv[2]
-  , pw= process.argv[3];
+  , pw= process.argv[3]
+  , port= process.argv[4];
+
+if (!port) port= 5000;
 
 kf.getTicket(usr,pw).then(ticket => {
-  var server = app.listen(5000, function () {
+  var server = app.listen(port, function () {
     var host = server.address().address;
     var port = server.address().port;
 
