@@ -15624,7 +15624,7 @@ return zhTw;
 
   var moment= __webpack_require__(0)
     , util= __webpack_require__(119)
-    , kort= __webpack_require__(120);
+    , kort= __webpack_require__(122);
 
   var map
     , fra= moment().startOf('day')
@@ -16197,7 +16197,9 @@ webpackContext.id = 118;
 
 /***/ }),
 /* 119 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+var URLSearchParams = __webpack_require__(120);
 
 exports.corssupported= function () {
   return "withCredentials" in (new XMLHttpRequest());
@@ -16206,7 +16208,7 @@ exports.corssupported= function () {
 exports.formatAdgangsadresse= function (mini, enlinje) {
 	let separator= (enlinje || typeof enlinje != 'undefined')?", ":"<br/>";
 	let supplerendebynavn= mini.supplerendebynavn?separator + mini.supplerendebynavn:"";
-	return `${mini.vejnavn} ${mini.husnr}${supplerendebynavn}${separator}${mini.postnr} ${mini.postnrnavn}`;	
+	return mini.vejnavn + " " + mini.husnr + supplerendebynavn + separator + mini.postnr + " " + mini.postnrnavn;	
 }
 
 exports.formatAdresse= function (mini, enlinje) {
@@ -16214,11 +16216,295 @@ exports.formatAdresse= function (mini, enlinje) {
 	let etagedør= (mini.etage?", "+mini.etage+".":"") + (mini.dør?" "+mini.dør:"");
 
 	let supplerendebynavn= mini.supplerendebynavn?separator + mini.supplerendebynavn:"";
-	return `${mini.vejnavn} ${mini.husnr}${etagedør}${supplerendebynavn}${separator}${mini.postnr} ${mini.postnrnavn}`;	
+	return mini.vejnavn + " " + mini.husnr + etagedør + supplerendebynavn + separator + mini.postnr + " " + mini.postnrnavn
+}
+
+exports.danUrl= function (path, query) { 
+  var params = new URLSearchParams();
+  Object.keys(query).forEach(function(key) {params.set(key, query[key])});
+  return path + "?" + params.toString();
 }
 
 /***/ }),
 /* 120 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {/*!
+Copyright (C) 2015 by WebReflection
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+*/
+
+
+function URLSearchParams(query) {
+  var
+    index, key, value,
+    pairs, i, length,
+    dict = Object.create(null)
+  ;
+  this[secret] = dict;
+  if (!query) return;
+  if (typeof query === 'string') {
+    if (query.charAt(0) === '?') {
+      query = query.slice(1);
+    }
+    for (
+      pairs = query.split('&'),
+      i = 0,
+      length = pairs.length; i < length; i++
+    ) {
+      value = pairs[i];
+      index = value.indexOf('=');
+      if (-1 < index) {
+        appendTo(
+          dict,
+          decode(value.slice(0, index)),
+          decode(value.slice(index + 1))
+        );
+      } else if (value.length){
+        appendTo(
+          dict,
+          decode(value),
+          ''
+        );
+      }
+    }
+  } else {
+    if (isArray(query)) {
+      for (
+        i = 0,
+        length = query.length; i < length; i++
+      ) {
+        value = query[i];
+        appendTo(dict, value[0], value[1]);
+      }
+    } else {
+      for (key in query) {
+         appendTo(dict, key, query[key]);
+      }
+    }
+  }
+}
+
+var
+  isArray = Array.isArray,
+  URLSearchParamsProto = URLSearchParams.prototype,
+  find = /[!'\(\)~]|%20|%00/g,
+  plus = /\+/g,
+  replace = {
+    '!': '%21',
+    "'": '%27',
+    '(': '%28',
+    ')': '%29',
+    '~': '%7E',
+    '%20': '+',
+    '%00': '\x00'
+  },
+  replacer = function (match) {
+    return replace[match];
+  },
+  iterable = isIterable(),
+  secret = '__URLSearchParams__:' + Math.random()
+;
+
+function appendTo(dict, name, value) {
+  if (name in dict) {
+    dict[name].push('' + value);
+  } else {
+    dict[name] = isArray(value) ? value : ['' + value];
+  }
+}
+
+function decode(str) {
+  return decodeURIComponent(str.replace(plus, ' '));
+}
+
+function encode(str) {
+  return encodeURIComponent(str).replace(find, replacer);
+}
+
+function isIterable() {
+  try {
+    return !!Symbol.iterator;
+  } catch(error) {
+    return false;
+  }
+}
+
+URLSearchParamsProto.append = function append(name, value) {
+  appendTo(this[secret], name, value);
+};
+
+URLSearchParamsProto.delete = function del(name) {
+  delete this[secret][name];
+};
+
+URLSearchParamsProto.get = function get(name) {
+  var dict = this[secret];
+  return name in dict ? dict[name][0] : null;
+};
+
+URLSearchParamsProto.getAll = function getAll(name) {
+  var dict = this[secret];
+  return name in dict ? dict[name].slice(0) : [];
+};
+
+URLSearchParamsProto.has = function has(name) {
+  return name in this[secret];
+};
+
+URLSearchParamsProto.set = function set(name, value) {
+  this[secret][name] = ['' + value];
+};
+
+URLSearchParamsProto.forEach = function forEach(callback, thisArg) {
+  var dict = this[secret];
+  Object.getOwnPropertyNames(dict).forEach(function(name) {
+    dict[name].forEach(function(value) {
+      callback.call(thisArg, value, name, this);
+    }, this);
+  }, this);
+};
+
+URLSearchParamsProto.keys = function keys() {
+  var items = [];
+  this.forEach(function(value, name) { items.push(name); });
+  var iterator = {
+    next: function() {
+      var value = items.shift();
+      return {done: value === undefined, value: value};
+    }
+  };
+
+  if (iterable) {
+    iterator[Symbol.iterator] = function() {
+      return iterator;
+    };
+  }
+
+  return iterator;
+};
+
+URLSearchParamsProto.values = function values() {
+  var items = [];
+  this.forEach(function(value) { items.push(value); });
+  var iterator = {
+    next: function() {
+      var value = items.shift();
+      return {done: value === undefined, value: value};
+    }
+  };
+
+  if (iterable) {
+    iterator[Symbol.iterator] = function() {
+      return iterator;
+    };
+  }
+
+  return iterator;
+};
+
+URLSearchParamsProto.entries = function entries() {
+  var items = [];
+  this.forEach(function(value, name) { items.push([name, value]); });
+  var iterator = {
+    next: function() {
+      var value = items.shift();
+      return {done: value === undefined, value: value};
+    }
+  };
+
+  if (iterable) {
+    iterator[Symbol.iterator] = function() {
+      return iterator;
+    };
+  }
+
+  return iterator;
+};
+
+if (iterable) {
+  URLSearchParamsProto[Symbol.iterator] = URLSearchParamsProto.entries;
+}
+
+/*
+URLSearchParamsProto.toBody = function() {
+  return new Blob(
+    [this.toString()],
+    {type: 'application/x-www-form-urlencoded'}
+  );
+};
+*/
+
+URLSearchParamsProto.toJSON = function toJSON() {
+  return {};
+};
+
+URLSearchParamsProto.toString = function toString() {
+  var dict = this[secret], query = [], i, key, name, value;
+  for (key in dict) {
+    name = encode(key);
+    for (
+      i = 0,
+      value = dict[key];
+      i < value.length; i++
+    ) {
+      query.push(name + '=' + encode(value[i]));
+    }
+  }
+  return query.join('&');
+};
+
+module.exports = global.URLSearchParams || URLSearchParams;
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(121)))
+
+/***/ }),
+/* 121 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 122 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16241,7 +16527,7 @@ var maxBounds= [
 
 exports.maxBounds= maxBounds;
 
-exports.viskort = function(id,ticket) {
+exports.viskort = function(id,ticket,options) {
 	var crs = new L.Proj.CRS('EPSG:25832',
     '+proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs', 
     {
@@ -16249,12 +16535,15 @@ exports.viskort = function(id,ticket) {
     }
   );
 
-  var map = new L.Map(id, {
-      crs: crs,
-      minZoom: 2,
-      maxZoom: 14,
-      maxBounds: maxBounds
-  });
+  if (typeof options === 'undefined') {
+    options= {};
+  }
+  options.crs= crs;
+  options.minZoom= 2;
+  options.maxZoom= 14;
+  options.maxBounds= maxBounds;
+
+  var map = new L.Map(id, options);
 
   function danKort(service,layer,styles,transparent) {
 		return L.tileLayer.wms('https://kortforsyningen.kms.dk/service', 
@@ -16274,9 +16563,10 @@ exports.viskort = function(id,ticket) {
 	}
 
  	var skaermkort= danKort('topo_skaermkort', 'dtk_skaermkort', 'default', false).addTo(map)
- 		, skaermkortdaempet= danKort('topo_skaermkort', 'dtk_skaermkort_daempet', 'default', false)
+    , skaermkortdaempet= danKort('topo_skaermkort', 'dtk_skaermkort_daempet', 'default', false)
+    //, skaermkortgraa= danKort('topo_skaermkort', 'dtk_skaermkort_graa', 'default', false)
  		, ortofoto= danKort('orto_foraar', 'orto_foraar', 'default', false)
- 		, quickortofoto= danKort('orto_foraar_temp', 'quickorto_2017_10cm', 'default', false)
+ 	//	, quickortofoto= danKort('orto_foraar_temp', 'quickorto_2017_10cm', 'default', false)
  		, historisk1842til1899= danKort('topo20_hoeje_maalebordsblade', 'dtk_hoeje_maalebordsblade', 'default', false)
  		, matrikelkort= danKort('mat', 'Centroide,MatrikelSkel,OptagetVej','sorte_centroider,sorte_skel,default','true')
  		, postnrkort= danKort('dagi', 'postdistrikt', 'default','true')
@@ -16292,8 +16582,9 @@ exports.viskort = function(id,ticket) {
  	 var baselayers = {
     "Skærmkort": skaermkort,
     "Skærmkort - dæmpet": skaermkortdaempet,
+   // "Skærmkort - gråt": skaermkortgraa,
     "Ortofoto": ortofoto,
-    "Quick ortofoto": quickortofoto,
+   // "Quick ortofoto": quickortofoto,
    	"Historisk 1842-1899": historisk1842til1899
   };
 
