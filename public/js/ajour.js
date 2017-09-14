@@ -265,6 +265,7 @@
     info.addTo(map);
     legend.addTo(map);
     markersLayer.addTo(map);
+    let zoom= map.getZoom();
     sekvensnummer= await senestesekvensnummer();
     await initAdresser();
     await initAdgangsadresser();

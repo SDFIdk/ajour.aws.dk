@@ -15885,6 +15885,7 @@ return zhTw;
     info.addTo(map);
     legend.addTo(map);
     markersLayer.addTo(map);
+    let zoom= map.getZoom();
     sekvensnummer= await senestesekvensnummer();
     await initAdresser();
     await initAdgangsadresser();
@@ -16525,8 +16526,8 @@ proj4.defs([
 //   [54.559132, 8.074720]
 // ];
 var maxBounds= [
-  [58.4744, 17.5575],
-  [53.015, 2.47833]
+  [58.0, 16.0],
+  [54.5, 7.9]
 ];
 
 exports.maxBounds= maxBounds;
@@ -16629,6 +16630,7 @@ exports.viskort = function(id,ticket,options) {
   });
 
 	map.fitBounds(maxBounds);
+  //map.panTo(new L.LatLng(40.737, -73.923));
 
 	return map;
 };
