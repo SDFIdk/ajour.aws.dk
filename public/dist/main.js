@@ -15873,6 +15873,18 @@ return zhTw;
     return div;
   };
 
+
+  var maxBounds= [
+    [58.4744, 17.5575],
+    [53.015, 2.47833]
+  ];
+
+  function beregnCenter() {
+    var x= (maxBounds[0][0]-maxBounds[1][0])/2+maxBounds[1][0]+0.5,
+        y= (maxBounds[0][1]-maxBounds[1][1])/2+maxBounds[1][1];
+    return L.latLng(x,y);
+  }
+
   async function init() { 
     adresseajourføringer= 0;
     adgangsadresseajourføringer= 0;    
@@ -15881,10 +15893,13 @@ return zhTw;
     til= moment();
     let response= await fetch('/getticket');    
     let ticket = await response.text(); 
-    map= kort.viskort('map', ticket);
+    map= kort.viskort('map', ticket);    
+    map.fitBounds(maxBounds);
     info.addTo(map);
     legend.addTo(map);
     markersLayer.addTo(map);
+    var center= beregnCenter();
+    map.setView(center,2);
     let zoom= map.getZoom();
     sekvensnummer= await senestesekvensnummer();
     await initAdresser();
@@ -15906,7 +15921,7 @@ return zhTw;
           await Promise.all([hentAdgangsadresser(snr,seneste),hentAdresser(snr,seneste)]); 
         }
         else {
-          map.flyToBounds(kort.maxBounds);
+          map.flyTo(beregnCenter(),2);
         }
       }
     }, 15000);
@@ -16526,8 +16541,8 @@ proj4.defs([
 //   [54.559132, 8.074720]
 // ];
 var maxBounds= [
-  [58.0, 16.0],
-  [54.5, 7.9]
+  [58.4744, 17.5575],
+  [53.015, 2.47833]
 ];
 
 exports.maxBounds= maxBounds;
@@ -16630,7 +16645,6 @@ exports.viskort = function(id,ticket,options) {
   });
 
 	map.fitBounds(maxBounds);
-  //map.panTo(new L.LatLng(40.737, -73.923));
 
 	return map;
 };

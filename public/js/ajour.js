@@ -253,6 +253,18 @@
     return div;
   };
 
+
+  var maxBounds= [
+    [58.4744, 17.5575],
+    [53.015, 2.47833]
+  ];
+
+  function beregnCenter() {
+    var x= (maxBounds[0][0]-maxBounds[1][0])/2+maxBounds[1][0]+0.5,
+        y= (maxBounds[0][1]-maxBounds[1][1])/2+maxBounds[1][1];
+    return L.latLng(x,y);
+  }
+
   async function init() { 
     adresseajourføringer= 0;
     adgangsadresseajourføringer= 0;    
@@ -261,10 +273,13 @@
     til= moment();
     let response= await fetch('/getticket');    
     let ticket = await response.text(); 
-    map= kort.viskort('map', ticket);
+    map= kort.viskort('map', ticket);    
+    map.fitBounds(maxBounds);
     info.addTo(map);
     legend.addTo(map);
     markersLayer.addTo(map);
+    var center= beregnCenter();
+    map.setView(center,2);
     let zoom= map.getZoom();
     sekvensnummer= await senestesekvensnummer();
     await initAdresser();
@@ -286,7 +301,7 @@
           await Promise.all([hentAdgangsadresser(snr,seneste),hentAdresser(snr,seneste)]); 
         }
         else {
-          map.flyToBounds(kort.maxBounds);
+          map.flyTo(beregnCenter(),2);
         }
       }
     }, 15000);
