@@ -10,7 +10,7 @@
   "author": "Finn Jordal",
   "license": "MIT",
   "dependencies": {
-    "dawa-kort": "^0.1.15",
+    "dawa-kort": "^0.1.18",
     "dawa-util": "^0.1.4",
     "leaflet": "^1.2.0",
     "moment": "^2.18.1",

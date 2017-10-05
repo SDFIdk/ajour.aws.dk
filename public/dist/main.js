@@ -16587,11 +16587,23 @@ exports.viskort = function(id,ticket,options) {
  		, kommunekort= danKort('dagi', 'kommune', 'default','true');
 
 	var adressekort = L.tileLayer.wms('https://kort.aws.dk/geoserver/aws4/wms', {
-	    transparent: true,
-	    layers: 'adgangsadresser',
-	    format: 'image/png',
-	    continuousWorld: true
-	  });
+      transparent: true,
+      layers: 'adgangsadresser',
+      format: 'image/png',
+      continuousWorld: true
+    });
+  var vejpunktkort = L.tileLayer.wms('https://kort.aws.dk/geoserver/aws4/wms', {
+      transparent: true,
+      layers: 'vejpunkter',
+      format: 'image/png',
+      continuousWorld: true
+    });
+  var vejpunktlinjekort = L.tileLayer.wms('https://kort.aws.dk/geoserver/aws4/wms', {
+      transparent: true,
+      layers: 'vejpunktlinjer',
+      format: 'image/png',
+      continuousWorld: true
+    });
 
  	 var baselayers = {
     "Skærmkort": skaermkort,
@@ -16603,10 +16615,12 @@ exports.viskort = function(id,ticket,options) {
   };
 
   var overlays = {
-   	"Matrikelkort": matrikelkort,
-   	"Kommunekort": kommunekort,
-   	"Postnummerkort": postnrkort,
-   	"Adressekort": adressekort
+   	"Matrikler": matrikelkort,
+   	"Kommuner": kommunekort,
+   	"Postnumre": postnrkort,
+    "Adresser": adressekort,
+    "Vejpunkter": vejpunktkort,
+    "Vejpunktlinjer": vejpunktlinjekort
   };
 
   L.control.layers(baselayers, overlays, {position: 'bottomleft'}).addTo(map);
@@ -16644,10 +16658,12 @@ exports.viskort = function(id,ticket,options) {
 	return map;
 };
 
-
-
 exports.etrs89towgs84= function(x,y) {
 	  return proj4('EPSG:25832','EPSG:4326', {x:x, y:y});  
+}
+
+exports.geojsontowgs84= function(geojson) {
+  return L.Proj.geoJson(geojson);
 }
 
 /***/ })
