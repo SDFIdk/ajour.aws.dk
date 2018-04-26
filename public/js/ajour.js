@@ -16,6 +16,11 @@
     , adgangsadresseajourføringer= 0;
 
 
+  let miljø= util.getQueryVariable('m');
+  if (miljø) {
+    host= host.replace('dawa',miljø); 
+  } 
+
   var danUrl= function (path, query) {    
     var url = new URL(path);
     Object.keys(query).forEach(key => url.searchParams.append(key, query[key]));
@@ -288,7 +293,7 @@
           await Promise.all([hentAdgangsadresser(snr,seneste),hentAdresser(snr,seneste)]); 
         }
         else {
-          map.flyTo(beregnCenter(),2);
+          map.flyTo(kort.beregnCenter(),2);
         }
       }
     }, 15000);

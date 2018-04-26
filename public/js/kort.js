@@ -3,6 +3,13 @@ var maxBounds= [
   [54.559132, 8.074720]
 ];
 
+
+var beregnCenter= function() {
+  var x= (maxBounds[0][0]-maxBounds[1][0])/2+maxBounds[1][0]+0.5,
+      y= (maxBounds[0][1]-maxBounds[1][1])/2+maxBounds[1][1];
+  return L.latLng(x,y);
+};
+
 var viskort = function(id,ticket) {
 	var crs = new L.Proj.CRS('EPSG:25832',
     '+proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs', 
