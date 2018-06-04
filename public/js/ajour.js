@@ -207,6 +207,83 @@
     }
   }
 
+  var initNavngivneVeje = async function() {
+    let url = danUrl(host + 'replikering/haendelser', {entitet: 'dar_navngivenvej_aktuel', tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()});
+    let response = await fetch(url);
+    let navngivneveje = await response.json();
+    visNavngivneVeje(navngivneveje,false);
+  }
+
+  var hentNavngivneVeje= async function(fra,til) {
+    var url = danUrl(host + 'replikering/haendelser', {entitet: 'dar_navngivenvej_aktuel', sekvensnummerfra: fra, sekvensnummertil: til});
+    let response = await fetch(url);
+    if (!response.ok) throw response.status
+    let navngivneveje = await response.json();
+    visNavngivneVeje(navngivneveje,true);
+  }
+
+  var visNavngivneVeje= function(hændelser, dopopup) {
+    for (var i= 0; i<hændelser.length; i++) {
+      visNavngivneVeje(hændelser[i]));
+    }  
+  }
+
+  var nevngivnevejid;
+  var visNavngivneVeje= function(hændelse, dopopup) { 
+    if (hændelse.operation === 'update' && nevngivnevejid === hændelse.data.id) return;
+    nevngivnevejid= hændelse.data.id;
+    var color= 'blue'   
+      , operation= 'ukendt';
+
+    switch (hændelse.operation) {
+    case 'insert':
+      color= 'red';
+      operation= 'oprettet';
+      break;
+    case 'update':
+      color= 'orange';
+      operation= 'ændret';
+      break;
+    case 'delete':
+      color= 'black';
+      operation= 'nedlagt';
+      break;
+    }
+
+    if (hændelse.data.vejnavnebeliggenhed_vejnavnelinje) {
+      if (hændelse.data.vejnavnebeliggenhed_vejnavnelinje.type === 'LineString') {
+        for (var i= 0; i < hændelse.data.vejnavnebeliggenhed_vejnavnelinje.length; i++) {
+          let koordinat= hændelse.data.vejnavnebeliggenhed_vejnavnelinje.coordinates[i];
+          let wgs84= kort.etrs89towgs84(koordinat[0], koordinat[0]);
+          hændelse.data.vejnavnebeliggenhed_vejnavnelinje.coordinates[i][0]= wgs84.x;
+          hændelse.data.vejnavnebeliggenhed_vejnavnelinje.coordinates[i][1]= wgs84.y;
+        }
+      } else if (hændelse.data.vejnavnebeliggenhed_vejnavnelinje.type === 'MultiLineString') {
+
+      }
+      else {
+        alert('vejnavnebeliggenhed_vejnavnelinje.type har ukendt værdi: ' + vejnavnebeliggenhed_vejnavnelinje.type);
+      }
+      var polyline = L.polyline(hændelse.data.vejnavnebeliggenhed_vejnavnelinje.coordinates, {color: color}).addTo(map);
+      //map.fitBounds(polyline.getBounds());
+      if (dopopup) {
+        map.flyToBounds(polyline.getBounds());
+        popup.openPopup();
+      }
+    }
+    else if (hændelse.data.vejnavnebeliggenhed_vejnavneområde) {
+
+    }
+    var wgs84= kort.etrs89towgs84(hændelse.data.etrs89koordinat_øst, hændelse.data.etrs89koordinat_nord);
+    var marker= L.circleMarker(L.latLng(wgs84.y, wgs84.x), {color: color, fillColor: color, stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
+    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/replikering/adgangsadresser/haendelser?id="+hændelse.data.id+"'>" + adgangsadresse.betegnelse + "</a>"),{autoPan: true});
+    markersLayer.addLayer(marker); 
+    if (dopopup) {
+      map.flyTo(L.latLng(wgs84.y, wgs84.x),12);
+      popup.openPopup();
+    }
+  }
+
   async function begrænssamtidige(promises, hændelser, start, længde, vis, dopopup) {
     if (start >= promises.length) return;
     var l= (promises.length-start<længde?promises.length-start:længde); 
