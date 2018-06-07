@@ -306,7 +306,6 @@
       var polygon = L.polygon(hændelse.data.vejnavnebeliggenhed_vejnavneområde.coordinates, {color: color}).addTo(map);
       //map.fitBounds(polyline.getBounds());
       var popup= polygon.bindPopup(L.popup({autoPan: true}).setLatLng(polygon.getCenter()).setContent("<a target='_blank' href='https://dawa.aws.dk/replikering/haendelser?entitet=dar_navngivenvej_aktuel&id="+hændelse.data.id+"'>" + hændelse.data.vejnavn + "</a>"));
-      dopopup= true;
       if (dopopup) {
         map.flyToBounds(polygon.getBounds());
         polygon.openPopup();
