@@ -16834,7 +16834,7 @@ module.exports = global.URLSearchParams || URLSearchParams;
       break;
     }
     var marker= L.circleMarker(L.latLng(adresse.y, adresse.x), {color: color, fillColor: color, stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
-    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/darhistorik?entitet=adresse&?id="+hændelse.data.id+"'>" + adresse.betegnelse + "</a>"),{autoPan: true});
+    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/darhistorik?entitet=adresse&id="+hændelse.data.id+"'>" + adresse.betegnelse + "</a>"),{autoPan: true});
     
     if (dopopup) {
       map.flyTo(L.latLng(adresse.y, adresse.x),12);
