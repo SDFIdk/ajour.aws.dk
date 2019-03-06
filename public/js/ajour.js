@@ -22,6 +22,14 @@
     host= host.replace('dawa',miljø); 
   } 
 
+  let kf= util.getQueryVariable('kf');
+
+  let zoomin= 18;
+  if (kf) {
+    zoomin= 12;
+  }
+  let duration= 1;
+
   var danUrl= function (path, query) {    
     var url = new URL(path);
     Object.keys(query).forEach(key => url.searchParams.append(key, query[key]));
@@ -108,7 +116,7 @@
     var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/darhistorik?entitet=adresse&id="+hændelse.data.id+"'>" + adresse.betegnelse + "</a>"),{autoPan: true});
     
     if (dopopup) {
-      map.flyTo(L.latLng(adresse.y, adresse.x),12);
+      map.flyTo(L.latLng(adresse.y, adresse.x),zoomin, {animate: true, duration: duration});
       popup.openPopup();
     }
   }
@@ -203,7 +211,7 @@
     var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/darhistorik?entitet=husnummer&id="+hændelse.data.id+"'>" + adgangsadresse.betegnelse + "</a>"),{autoPan: true});
     markersLayer.addLayer(marker); 
     if (dopopup) {
-      map.flyTo(L.latLng(wgs84.y, wgs84.x),12);
+      map.flyTo(L.latLng(wgs84.y, wgs84.x),zoomin, {animate: true, duration: duration});
       popup.openPopup();
     }
   }
@@ -280,7 +288,7 @@
       //map.fitBounds(polyline.getBounds());
       var popup= polyline.bindPopup(L.popup({autoPan: true}).setLatLng(polyline.getCenter()).setContent("<a target='_blank' href='https://dawa.aws.dk/darhistorik?entitet=navngivenvej&id="+hændelse.data.id+"'>" + hændelse.data.vejnavn + "</a>"));
       if (dopopup) {
-        map.flyToBounds(polyline.getBounds());
+        map.flyToBounds(polyline.getBounds(), {animate: true, duration: duration});
         polyline.openPopup();
       }
     }
@@ -307,7 +315,7 @@
       //map.fitBounds(polyline.getBounds());
       var popup= polygon.bindPopup(L.popup({autoPan: true}).setLatLng(polygon.getCenter()).setContent("<a target='_blank' href='https://dawa.aws.dk/replikering/haendelser?entitet=dar_navngivenvej_aktuel&id="+hændelse.data.id+"'>" + hændelse.data.vejnavn + "</a>"));
       if (dopopup) {
-        map.flyToBounds(polygon.getBounds());
+        map.flyToBounds(polygon.getBounds(), {animate: true, duration: duration});
         polygon.openPopup();
       }
     }
@@ -365,6 +373,11 @@
     return div;
   };
 
+  var maxBounds= [
+    [57.751949, 15.193240],
+    [54.559132, 8.074720]
+  ];
+
   async function init() { 
     adresseajourføringer= 0;
     adgangsadresseajourføringer= 0; 
@@ -375,12 +388,23 @@
     let response= await fetch('/getticket');    
     let ticket = await response.text(); 
     let options= {baselayer: "Skærmkort - dæmpet"};
-    map= kort.viskort('map', ticket, options); 
+    if (kf) {
+      map= kort.viskort('map', ticket, options);
+      legend.addTo(map);
+    }
+    else {
+      map = L.map('map').setView([47.37390, 8.54560], 11);
+      var gl = L.mapboxGL({
+        attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+        accessToken: 'not-needed',
+        style: 'https://maps.tilehosting.com/styles/streets/style.json?key=LCpartX5d8CZQ00rAW6d'
+      }).addTo(map);
+    } 
     info.addTo(map);
-    legend.addTo(map);
     markersLayer.addTo(map);
     var center= kort.beregnCenter();
-    map.setView(center,2);
+    //map.setView(center,2);
+    map.fitBounds(maxBounds);
     let zoom= map.getZoom();
     sekvensnummer= await senestesekvensnummer();
     await initAdresser();
@@ -403,10 +427,11 @@
           await Promise.all([hentAdgangsadresser(snr,seneste),hentAdresser(snr,seneste),hentNavngivneVeje(snr,seneste)]); 
         }
         else {
-          map.flyTo(kort.beregnCenter(),2);
+          map.flyToBounds(maxBounds, {animate: true, duration: duration});
+          //map.flyTo(kort.beregnCenter(),2);
         }
       }
-    }, 15000);
+    }, 30000);
   }
 
   main();

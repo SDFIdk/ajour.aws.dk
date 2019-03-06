@@ -13,6 +13,8 @@
     "dawa-kort": "^0.1.34",
     "dawa-util": "^0.1.9",
     "leaflet": "^1.2.0",
+    "mapbox-gl": "^0.53.1",
+    "mapbox-gl-leaflet": "0.0.4",
     "moment": "^2.18.1",
     "proj4leaflet": "^1.0.2"
   },
