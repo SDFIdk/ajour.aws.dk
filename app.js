@@ -51,9 +51,14 @@ app.get('/getticket', function (req, res, next) {
   });
 }); 
 
+app.get('/maptilerkey', function (req, res, next) { 
+  res.status(200).send(maptilerkey);
+}); 
+
 var usr= process.argv[2]
   , pw= process.argv[3]
-  , port= process.argv[4];
+  , maptilerkey= process.argv[4]
+  , port= process.argv[5];
 
 if (!port) port= 5000;
 

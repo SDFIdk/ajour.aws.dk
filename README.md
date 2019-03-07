@@ -3,4 +3,4 @@ Vis opdateringen af Danmarks Adresser
 
 Build: npm run build
 
-Start: node app.js {kortforsyningsbruger} {password} {port}
+Start: node app.js {kortforsyningsbruger} {password} {maptiler API key} {port}

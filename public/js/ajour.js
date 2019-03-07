@@ -28,7 +28,7 @@
   if (kf) {
     zoomin= 12;
   }
-  let duration= 1;
+  let duration= 2;
 
   var danUrl= function (path, query) {    
     var url = new URL(path);
@@ -385,22 +385,24 @@
     markersLayer = new L.LayerGroup();   
     fra= moment().startOf('day');
     til= moment();
-    let response= await fetch('/getticket');    
-    let ticket = await response.text(); 
-    let options= {baselayer: "Skærmkort - dæmpet"};
     if (kf) {
+      let response= await fetch('/getticket');    
+      let ticket = await response.text(); 
+      let options= {baselayer: "Skærmkort - dæmpet"};
       map= kort.viskort('map', ticket, options);
-      legend.addTo(map);
     }
-    else {
-      map = L.map('map').setView([47.37390, 8.54560], 11);
+    else {      
+      let response= await fetch('/maptilerkey');    
+      let maptilerkey = await response.text(); 
+      map = L.map('map', {zoomDelta: 0.25, zoomSnap: 0.25});
       var gl = L.mapboxGL({
         attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
         accessToken: 'not-needed',
-        style: 'https://maps.tilehosting.com/styles/streets/style.json?key=LCpartX5d8CZQ00rAW6d'
+        style: 'https://maps.tilehosting.com/styles/streets/style.json?key='+maptilerkey
       }).addTo(map);
     } 
     info.addTo(map);
+    legend.addTo(map);
     markersLayer.addTo(map);
     var center= kort.beregnCenter();
     //map.setView(center,2);
@@ -431,7 +433,7 @@
           //map.flyTo(kort.beregnCenter(),2);
         }
       }
-    }, 30000);
+    }, 15000);
   }
 
   main();
