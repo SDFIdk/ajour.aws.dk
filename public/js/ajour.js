@@ -10,7 +10,7 @@
     , fra= moment().startOf('day')
     , til= moment()
     , sekvensnummer= 0
-    , host= 'http://dawa.aws.dk/'
+    , host= 'https://dawa.aws.dk/'
     , markersLayer
     , adresseajourføringer= 0
     , adgangsadresseajourføringer= 0
