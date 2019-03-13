@@ -22,12 +22,21 @@
     host= host.replace('dawa',miljø); 
   } 
 
-  let kf= util.getQueryVariable('kf');
-
-  let zoomin= 18;
-  if (kf) {
-    zoomin= 12;
+  let bgkort= util.getQueryVariable('kort');
+  if (!bgkort) {
+    bgkort= 'kf';
   }
+
+  let zoomin= 12;
+  switch (bgkort) {
+    case 'kf':
+      zoomin= 12;
+      break;
+    case 'osmvt':
+      zoomin= 18;
+      break;
+  }
+
   let duration= 2;
 
   var danUrl= function (path, query) {    
@@ -378,6 +387,8 @@
     [54.559132, 8.074720]
   ];
 
+  let zoomniveau= null;
+
   async function init() { 
     adresseajourføringer= 0;
     adgangsadresseajourføringer= 0; 
@@ -385,35 +396,38 @@
     markersLayer = new L.LayerGroup();   
     fra= moment().startOf('day');
     til= moment();
-    if (kf) {
-      let response= await fetch('/getticket');    
-      let ticket = await response.text(); 
-      let options= {baselayer: "Skærmkort - dæmpet"};
-      map= kort.viskort('map', ticket, options);
+    switch (bgkort) {
+      case 'kf':
+        let response= await fetch('/getticket');    
+        let ticket = await response.text(); 
+        let options= {baselayer: "Skærmkort - dæmpet"};
+        map= kort.viskort('map', ticket, options);
+        break;
+      case 'osmvt':     
+        let mtkresponse= await fetch('/maptilerkey');    
+        let maptilerkey = await mtkresponse.text(); 
+        map = L.map('map', {zoomDelta: 0.25, zoomSnap: 0.25});
+        var gl = L.mapboxGL({
+          attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+          accessToken: 'not-needed',
+          style: 'https://maps.tilehosting.com/styles/streets/style.json?key='+maptilerkey
+        }).addTo(map);
+        break;
     }
-    else {      
-      let response= await fetch('/maptilerkey');    
-      let maptilerkey = await response.text(); 
-      map = L.map('map', {zoomDelta: 0.25, zoomSnap: 0.25});
-      var gl = L.mapboxGL({
-        attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
-        accessToken: 'not-needed',
-        style: 'https://maps.tilehosting.com/styles/streets/style.json?key='+maptilerkey
-      }).addTo(map);
-    } 
     info.addTo(map);
     legend.addTo(map);
     markersLayer.addTo(map);
     var center= kort.beregnCenter();
     //map.setView(center,2);
     map.fitBounds(maxBounds);
-    let zoom= map.getZoom();
+    zoomniveau= map.getZoom();
     sekvensnummer= await senestesekvensnummer();
     await initAdresser();
     await initAdgangsadresser();
     await initNavngivneVeje();
   }
 
+  let mb2= null;
   async function main() {
     init();
     setInterval(async function () {
@@ -429,7 +443,9 @@
           await Promise.all([hentAdgangsadresser(snr,seneste),hentAdresser(snr,seneste),hentNavngivneVeje(snr,seneste)]); 
         }
         else {
-          map.flyToBounds(maxBounds, {animate: true, duration: duration});
+          if (map.getZoom() != zoomniveau) { // spar på kald til kortservice
+            map.flyToBounds(maxBounds, {animate: true, duration: duration});
+          }          
           //map.flyTo(kort.beregnCenter(),2);
         }
       }
