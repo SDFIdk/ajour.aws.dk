@@ -145,10 +145,10 @@
     visAdgangsadresser(adgangsadresser,true);
   }
 
-  var visAdgangsadresser= function(hændelser, dopopup) {
+  var visAdgangsadresser= async function(hændelser, dopopup) {
     var promises= [];    
     for (var i= 0; i<hændelser.length; i++) {
-      promises.push(getAdgangsadressebetegnelse(hændelser[i]));
+      promises.push(await getAdgangsadressebetegnelse(hændelser[i]));
     }
     if (hændelser.length > 0) {
       adgangsadresseajourføringer= adgangsadresseajourføringer + hændelser.length;
@@ -157,7 +157,7 @@
     }
   }
 
-  var getAdgangsadressebetegnelse= function(hændelse) {
+  var getAdgangsadressebetegnelse= async function(hændelse) {
 
     let fraVejstykke= new Promise(async function(resolve, reject) {
      
