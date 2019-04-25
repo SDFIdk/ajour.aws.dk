@@ -9,7 +9,7 @@
   var map
     , fra= moment().startOf('day')
     , til= moment()
-    , sekvensnummer= 0
+    , transaktionsID= 0
     , host= 'https://dawa.aws.dk/'
     , markersLayer
     , adresseajourføringer= 0
@@ -46,30 +46,27 @@
   }
 
   var initAdresser = async function() {
-    let url = danUrl(host + 'replikering/adresser/haendelser', {tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()});
+    let url = danUrl(host + 'replikering/haendelser', {entitet: 'adresse', tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()});
     let response = await fetch(url);
     let adresser = await response.json();
     visAdresser(adresser,false);
   }
 
   var hentAdresser= async function(fra,til) {
-    var url = danUrl(host + 'replikering/adresser/haendelser', {sekvensnummerfra: fra, sekvensnummertil: til});
+    var url = danUrl(host + 'replikering/haendelser', {entitet: 'adresse', txidfra: fra, txidtil: til});
     let response = await fetch(url);
     if (!response.ok) throw response.status
     let adresser = await response.json();
     visAdresser(adresser,true);
   }
 
-  var visAdresser= function(hændelser, dopopup) {
-    var promises= [];    
+  var visAdresser= async function(hændelser, dopopup) {
     for (var i= 0; i<hændelser.length; i++) {
-      promises.push(getAdressebetegnelse(hændelser[i]));
-    }    
-    if (hændelser.length > 0) {
-      adresseajourføringer= adresseajourføringer + hændelser.length;
-      info.update();
-      begrænssamtidige(promises, hændelser, 0, 10, visAdresse, dopopup);
-    }
+      let adrbet= await getAdressebetegnelse(hændelser[i]);
+      visAdresse(adrbet, hændelser[i], dopopup);
+      adresseajourføringer++;
+      info.update(); 
+    } 
   }
 
   var getAdressebetegnelse= function(hændelse) {
@@ -131,30 +128,27 @@
   }
 
   var initAdgangsadresser= async function() {
-    let url = danUrl(host + 'replikering/adgangsadresser/haendelser', {tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()});
+    let url = danUrl(host + 'replikering/haendelser', {entitet: 'adgangsadresse', tidspunktfra: fra.utc().toISOString(), tidspunkttil: til.utc().toISOString()});
     let response = await fetch(url);
     let adgangsadresser = await response.json();
     visAdgangsadresser(adgangsadresser,false);
   }
 
   var hentAdgangsadresser= async function(fra,til) {
-    var url = danUrl(host + 'replikering/adgangsadresser/haendelser', {sekvensnummerfra: fra, sekvensnummertil: til});
+    var url = danUrl(host + 'replikering/haendelser', {entitet: 'adgangsadresse', txidfra: fra, txidtil: til});
     let response = await fetch(url);
     if (!response.ok) throw response.status
     let adgangsadresser = await response.json();
     visAdgangsadresser(adgangsadresser,true);
   }
 
-  var visAdgangsadresser= async function(hændelser, dopopup) {
-    var promises= [];    
+  var visAdgangsadresser= async function(hændelser, dopopup) {    
     for (var i= 0; i<hændelser.length; i++) {
-      promises.push(await getAdgangsadressebetegnelse(hændelser[i]));
-    }
-    if (hændelser.length > 0) {
-      adgangsadresseajourføringer= adgangsadresseajourføringer + hændelser.length;
-      info.update();
-      begrænssamtidige(promises, hændelser, 0, 5, visAdgangsadresse, dopopup);
-    }
+      let adrbet= await getAdgangsadressebetegnelse(hændelser[i]);
+      visAdgangsadresse(adrbet, hændelser[i], dopopup);
+      adgangsadresseajourføringer++;
+      info.update(); 
+    } 
   }
 
   var getAdgangsadressebetegnelse= async function(hændelse) {
@@ -233,7 +227,7 @@
   }
 
   var hentNavngivneVeje= async function(fra,til) {
-    var url = danUrl(host + 'replikering/haendelser', {entitet: 'dar_navngivenvej_aktuel', sekvensnummerfra: fra, sekvensnummertil: til});
+    var url = danUrl(host + 'replikering/haendelser', {entitet: 'dar_navngivenvej_aktuel', txidfra: fra, txidtil: til});
     let response = await fetch(url);
     if (!response.ok) throw response.status
     let navngivneveje = await response.json();
@@ -243,9 +237,7 @@
   var visNavngivneVeje= function(hændelser, dopopup) {
     for (var i= 0; i<hændelser.length; i++) {
       visNavngivneVej(hændelser[i]);
-    } 
-    if (hændelser.length > 0) {
-      navngivnevejeajourføringer= navngivnevejeajourføringer + hændelser.length;
+      navngivnevejeajourføringer++;
       info.update();
     } 
   }
@@ -330,22 +322,10 @@
     }
   }
 
-  async function begrænssamtidige(promises, hændelser, start, længde, vis, dopopup) {
-    if (start >= promises.length) return;
-    var l= (promises.length-start<længde?promises.length-start:længde); 
-    var subpromises= promises.slice(start,start+l);
-    let data= await Promise.all(subpromises);
-    for (var i = 0; i < data.length; i++) {
-      let adresse= data[i];
-      vis(adresse, hændelser[start+i], dopopup);
-    } 
-    begrænssamtidige(promises,hændelser,start+længde,længde,vis,dopopup);
-  }
-
-  async function senestesekvensnummer() {   
-    let response = await fetch(host+"/replikering/senestesekvensnummer");
+  async function senestetransaktion() {   
+    let response = await fetch(host+"/replikering/senestetransaktion");
     let seneste= await response.json(); 
-    return seneste.sekvensnummer;
+    return seneste.txid;
   }
 
   var info = L.control();
@@ -390,57 +370,61 @@
   let zoomniveau= null;
 
   async function init() { 
-    adresseajourføringer= 0;
-    adgangsadresseajourføringer= 0; 
-    navngivnevejeajourføringer= 0;   
-    markersLayer = new L.LayerGroup();   
-    fra= moment().startOf('day');
-    til= moment();
-    switch (bgkort) {
-      case 'kf':
-        let response= await fetch('/getticket');    
-        let ticket = await response.text(); 
-        let options= {baselayer: "Skærmkort - dæmpet"};
-        map= kort.viskort('map', ticket, options);
-        break;
-      case 'osmvt':     
-        let mtkresponse= await fetch('/maptilerkey');    
-        let maptilerkey = await mtkresponse.text(); 
-        map = L.map('map', {zoomDelta: 0.25, zoomSnap: 0.25});
-        var gl = L.mapboxGL({
-          attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
-          accessToken: 'not-needed',
-          style: 'https://maps.tilehosting.com/styles/streets/style.json?key='+maptilerkey
-        }).addTo(map);
-        break;
-    }
-    info.addTo(map);
-    legend.addTo(map);
-    markersLayer.addTo(map);
-    var center= kort.beregnCenter();
-    //map.setView(center,2);
-    map.fitBounds(maxBounds);
-    zoomniveau= map.getZoom();
-    sekvensnummer= await senestesekvensnummer();
-    await initAdresser();
-    await initAdgangsadresser();
-    await initNavngivneVeje();
+    return new Promise(async function(resolve, reject) { 
+      adresseajourføringer= 0;
+      adgangsadresseajourføringer= 0; 
+      navngivnevejeajourføringer= 0;   
+      markersLayer = new L.LayerGroup();   
+      fra= moment().startOf('day');
+      til= moment();
+      switch (bgkort) {
+        case 'kf':
+          let response= await fetch('/getticket');    
+          let ticket = await response.text(); 
+          let options= {baselayer: "Skærmkort - dæmpet"};
+          map= kort.viskort('map', ticket, options);
+          break;
+        case 'osmvt':     
+          let mtkresponse= await fetch('/maptilerkey');    
+          let maptilerkey = await mtkresponse.text(); 
+          map = L.map('map', {zoomDelta: 0.25, zoomSnap: 0.25});
+          var gl = L.mapboxGL({
+            attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+            accessToken: 'not-needed',
+            style: 'https://maps.tilehosting.com/styles/streets/style.json?key='+maptilerkey
+          }).addTo(map);
+          break;
+      }
+      info.addTo(map);
+      legend.addTo(map);
+      markersLayer.addTo(map);
+      var center= kort.beregnCenter();
+      //map.setView(center,2);
+      map.fitBounds(maxBounds);
+      zoomniveau= map.getZoom();
+      transaktionsID= await senestetransaktion();
+      initAdresser();
+      initAdgangsadresser();
+      initNavngivneVeje();
+      resolve();
+    });
   }
 
-  let mb2= null;
   async function main() {
-    init();
+    await init();
     setInterval(async function () {
       if (til.local().date() != moment().local().date()) {
         map.remove();
         init();
       }
       else {
-        let seneste= await senestesekvensnummer();
-        if (seneste > sekvensnummer) { 
-          let snr= sekvensnummer+1;            
-          sekvensnummer= seneste;
-          await Promise.all([hentAdgangsadresser(snr,seneste),hentAdresser(snr,seneste),hentNavngivneVeje(snr,seneste)]); 
+        let seneste= await senestetransaktion();
+        if (seneste > transaktionsID) { 
+          let tid= transaktionsID+1;            
+          transaktionsID= seneste;
+          hentAdgangsadresser(tid,seneste);
+          hentAdresser(tid,seneste);
+          hentNavngivneVeje(tid,seneste); 
         }
         else {
           if (map.getZoom() != zoomniveau) { // spar på kald til kortservice
