@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/DanmarksAdresser/ajour.aws.dk#readme",
   "dependencies": {
-    "express": "^4.15.2",
+    "express": "^4.17.1",
     "kf-getticket": "^1.0.0",
     "request": "^2.81.0",
     "request-promise": "^4.2.1"
