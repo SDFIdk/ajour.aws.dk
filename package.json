@@ -21,7 +21,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "kf-getticket": "^1.0.0",
-    "request": "^2.81.0",
-    "request-promise": "^4.2.1"
+    "request": "^2.88.2",
+    "request-promise": "^4.2.5"
   }
 }
