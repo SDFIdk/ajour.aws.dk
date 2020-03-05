@@ -22,9 +22,7 @@
     "express": "^4.17.1",
     "kf-getticket": "^1.0.0",
     "request": "^2.88.2",
-    "request-promise": "^4.2.5"
-  },
-  "devDependencies": {
+    "request-promise": "^4.2.5",
     "webpack-merge": "^4.2.2"
   }
 }
