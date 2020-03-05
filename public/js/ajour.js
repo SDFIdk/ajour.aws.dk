@@ -77,7 +77,7 @@
       if (response.ok) {
         adresser= await response.json();
         if (adresser.length > 0) {
-          resolve({ok: true, betegnelse: util.formatAdresse(adresser[0]), x: adresser[0].x, y:adresser[0].y});
+          resolve({ok: true, betegnelse: util.formatAdresse(adresser[0], false), x: adresser[0].x, y:adresser[0].y});
           return;
         }
       }
@@ -88,7 +88,7 @@
           let adgangsadresse= adgangsadresser[0];
           adgangsadresse.etage= hændelse.data.etage;
           adgangsadresse.dør= hændelse.data.dør;
-          resolve({ok: true, betegnelse: util.formatAdresse(adgangsadresse), x: adgangsadresse.x, y:adgangsadresse.y});
+          resolve({ok: true, betegnelse: util.formatAdresse(adgangsadresse, false), x: adgangsadresse.x, y:adgangsadresse.y});
           return;
         }
       }
@@ -178,7 +178,7 @@
       [vejstykker, postnumre] = await Promise.all([vresponse.json(), presponse.json()]);
       if (vejstykker[0] && postnumre[0]) {
         let adgangsadresse= {vejnavn: vejstykker[0].navn, husnr: hændelse.data.husnr, supplerendebynavn: hændelse.data.supplerendebynavn, postnr: hændelse.data.postnr, postnrnavn: postnumre[0].navn};
-        resolve({betegnelse: util.formatAdgangsadresse(adgangsadresse)});
+        resolve({betegnelse: util.formatAdgangsadresse(adgangsadresse, false)});
       }
       resolve({betegnelse: "Ufuldstændig adressebetegnelse"});
       return;

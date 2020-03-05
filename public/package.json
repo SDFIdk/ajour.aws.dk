@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "devbuild": "npm install && webpack --mode=development",
-    "build": "npm install && webpack --mode=production"
+    "devbuild": "npm install && webpack --config webpack.dev.js",
+    "build": "npm install && webpack --config webpack.prod.js"
   },
   "author": "Finn Jordal",
   "license": "MIT",
