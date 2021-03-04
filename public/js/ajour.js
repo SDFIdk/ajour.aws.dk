@@ -323,7 +323,7 @@
   }
 
   async function senestetransaktion() {   
-    let response = await fetch(host+"/replikering/senestetransaktion");
+    let response = await fetch(host+"replikering/senestetransaktion");
     let seneste= await response.json(); 
     return seneste.txid;
   }
