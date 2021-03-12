@@ -10,7 +10,7 @@
     , fra= moment().startOf('day')
     , til= moment()
     , transaktionsID= 0
-    , host= 'https://dawa.aws.dk/'
+    , host= 'https://api.dataforsyningen.dk/'
     , markersLayer
     , adresseajourføringer= 0
     , adgangsadresseajourføringer= 0
@@ -19,7 +19,7 @@
 
   let miljø= util.getQueryVariable('m');
   if (miljø) {
-    host= host.replace('dawa',miljø); 
+    host= host.replace('api',miljø); 
   } 
 
   let bgkort= util.getQueryVariable('kort');
@@ -119,7 +119,7 @@
       break;
     }
     var marker= L.circleMarker(L.latLng(adresse.y, adresse.x), {color: color, fillColor: color, stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
-    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://info.aws.dk/darhistorik?entitet=adresse&id="+hændelse.data.id+"'>" + adresse.betegnelse + "</a>"),{autoPan: true});
+    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://info.dataforsyningen.dk/darhistorik?entitet=adresse&id="+hændelse.data.id+"'>" + adresse.betegnelse + "</a>"),{autoPan: true});
     
     if (dopopup) {
       map.flyTo(L.latLng(adresse.y, adresse.x),zoomin, {animate: true, duration: duration});
@@ -211,7 +211,7 @@
 
     var wgs84= kort.etrs89towgs84(hændelse.data.etrs89koordinat_øst, hændelse.data.etrs89koordinat_nord);
     var marker= L.circleMarker(L.latLng(wgs84.y, wgs84.x), {color: color, fillColor: color, stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
-    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://info.aws.dk/darhistorik?entitet=husnummer&id="+hændelse.data.id+"'>" + adgangsadresse.betegnelse + "</a>"),{autoPan: true});
+    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://info.dataforsyningen.dk/darhistorik?entitet=husnummer&id="+hændelse.data.id+"'>" + adgangsadresse.betegnelse + "</a>"),{autoPan: true});
     markersLayer.addLayer(marker); 
     if (dopopup) {
       map.flyTo(L.latLng(wgs84.y, wgs84.x),zoomin, {animate: true, duration: duration});
@@ -287,7 +287,7 @@
       }
       var polyline = L.polyline(hændelse.data.vejnavnebeliggenhed_vejnavnelinje.coordinates, {color: color}).addTo(map);
       //map.fitBounds(polyline.getBounds());
-      var popup= polyline.bindPopup(L.popup({autoPan: true}).setLatLng(polyline.getCenter()).setContent("<a target='_blank' href='https://info.aws.dk/darhistorik?entitet=navngivenvej&id="+hændelse.data.id+"'>" + hændelse.data.vejnavn + "</a>"));
+      var popup= polyline.bindPopup(L.popup({autoPan: true}).setLatLng(polyline.getCenter()).setContent("<a target='_blank' href='https://info.dataforsyningen.dk/darhistorik?entitet=navngivenvej&id="+hændelse.data.id+"'>" + hændelse.data.vejnavn + "</a>"));
       if (dopopup) {
         map.flyToBounds(polyline.getBounds(), {animate: true, duration: duration});
         polyline.openPopup();
@@ -314,7 +314,7 @@
       } 
       var polygon = L.polygon(hændelse.data.vejnavnebeliggenhed_vejnavneområde.coordinates, {color: color}).addTo(map);
       //map.fitBounds(polyline.getBounds());
-      var popup= polygon.bindPopup(L.popup({autoPan: true}).setLatLng(polygon.getCenter()).setContent("<a target='_blank' href='https://dawa.aws.dk/replikering/haendelser?entitet=dar_navngivenvej_aktuel&id="+hændelse.data.id+"'>" + hændelse.data.vejnavn + "</a>"));
+      var popup= polygon.bindPopup(L.popup({autoPan: true}).setLatLng(polygon.getCenter()).setContent("<a target='_blank' href='https://api.dataforsyningen.dk/replikering/haendelser?entitet=dar_navngivenvej_aktuel&id="+hændelse.data.id+"'>" + hændelse.data.vejnavn + "</a>"));
       if (dopopup) {
         map.flyToBounds(polygon.getBounds(), {animate: true, duration: duration});
         polygon.openPopup();
