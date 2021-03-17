@@ -20,7 +20,7 @@ app.get('/', function (req, res) {
 // function getTicket(usr,pw) {
 //   return new Promise((resolve, reject) => {
 //     var options= {};
-//     options.url='https://api.dataforsyningen.dk/service';
+//     options.url='https://api.dataforsyningen.dk/' + service;
 //     options.qs= {};
 //     options.qs.service= 'META';
 //     options.qs.request= 'GetTicket';
