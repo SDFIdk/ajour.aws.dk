@@ -1,5 +1,4 @@
-var express = require('express')
-  , kf = require('kf-getticket');
+var express = require('express');
 
 var app = express();
 
@@ -42,34 +41,19 @@ app.get('/', function (req, res) {
 //   });
 // }
 
-app.get('/getticket', function (req, res, next) { 
-  kf.getTicket(usr,pw).then((ticket) => {
-    res.status(200).send(ticket);
-  })
-  .catch((err) => {
-    res.status(400).send('Ukendt username og password: ' + err);
-  });
-}); 
-
 app.get('/maptilerkey', function (req, res, next) { 
   res.status(200).send(maptilerkey);
 }); 
 
-var usr= process.argv[2]
-  , pw= process.argv[3]
-  , maptilerkey= process.argv[4]
-  , port= process.argv[5];
+maptilerkey= process.argv[4];
+
+port= process.argv[5];
 
 if (!port) port= 5000;
 
-kf.getTicket(usr,pw).then(ticket => {
-  var server = app.listen(port, function () {
-    var host = server.address().address;
-    var port = server.address().port;
+var server = app.listen(port, function () {
+  var host = server.address().address;
+  var port = server.address().port;
 
-    console.log('URL http://%s:%s', host, port);
-  });
-})
-.catch(err => {
-  console.log("Ukendt username og password (%s)",err);
-})
+  console.log('URL http://%s:%s', host, port);
+});

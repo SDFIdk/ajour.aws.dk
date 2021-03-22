@@ -378,11 +378,10 @@
       fra= moment().startOf('day');
       til= moment();
       switch (bgkort) {
-        case 'kf':
-          let response= await fetch('/getticket');    
-          let ticket = await response.text(); 
+        case 'kf':  
+          let token = 'd902ac31b1c3ff2d3e7f6aa7073c6c67'; 
           let options= {baselayer: "Skærmkort - dæmpet"};
-          map= kort.viskort('map', ticket, options);
+          map= kort.viskort('map', token, options);
           break;
         case 'osmvt':     
           let mtkresponse= await fetch('/maptilerkey');    

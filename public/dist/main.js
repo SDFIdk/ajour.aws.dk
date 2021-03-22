@@ -11023,11 +11023,8 @@
         return new Promise((async function (e, t) {
             switch (l = 0, c = 0, h = 0, s = new L.LayerGroup, _ = r().startOf("day"), o = r(), y) {
                 case "kf":
-                    let e = await fetch("/getticket"),
-                        t = await e.text(),
-                        a = {
-                            baselayer: "Skærmkort - dæmpet"
-                        };
+                        let t = 'd902ac31b1c3ff2d3e7f6aa7073c6c67';
+                        let a = {baselayer: "Skærmkort - dæmpet"};
                     n = d.viskort("map", t, a);
                     break;
                 case "osmvt":
@@ -11480,7 +11477,7 @@
                 format: "image/png",
                 maxZoom: 14,
                 minZoom: 2,
-                ticket: t,
+                token: t,
                 attribution: 'Data</a> fra <a href="https://dawadocs.dataforsyningen.dk">DAWA</a> | Map data &copy;  <a href="https://sdfe.dk">SDFE</a>',
                 layers: a,
                 styles: n,
