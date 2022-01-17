@@ -11,16 +11,16 @@
   "author": "Finn Jordal",
   "license": "MIT",
   "dependencies": {
-    "dawa-kort": "^0.1.48",
-    "dawa-util": "^0.1.13",
+    "@dawadk/dawa-kort": "^0.1.49",
+    "@dawadk/dawa-util": "^0.1.14",
     "leaflet": "^1.6.0",
-    "mapbox-gl": "^0.53.1",
+    "mapbox-gl": "^2.6.1",
     "mapbox-gl-leaflet": "0.0.4",
     "moment": "^2.24.0",
     "proj4leaflet": "^1.0.2"
   },
   "devDependencies": {
     "webpack": "^4.42.0",
-    "webpack-cli": "^3.3.11"
+    "webpack-cli": "^4.9.1"
   }
 }

@@ -10,17 +10,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DanmarksAdresser/ajour.aws.dk.git"
+    "url": "git+https://github.com/Dataforsyningen/ajour.aws.dk.git"
   },
   "author": "Finn Jordal",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/DanmarksAdresser/ajour.aws.dk/issues"
+    "url": "https://github.com/Dataforsyningen/ajour.aws.dk/issues"
   },
-  "homepage": "https://github.com/DanmarksAdresser/ajour.aws.dk#readme",
+  "homepage": "https://github.com/Dataforsyningen/ajour.aws.dk#readme",
   "dependencies": {
     "express": "^4.17.1",
-    "kf-getticket": "^1.0.0",
+    "@dawadk/kf-getticket": "^1.0.1",
     "request": "^2.88.2",
     "request-promise": "^4.2.5",
     "webpack-merge": "^4.2.2",
