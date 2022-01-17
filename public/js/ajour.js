@@ -3,8 +3,8 @@
 //function() {
 
   var moment= require('moment')
-    , util= require("dawa-util")
-    , kort= require("dawa-kort");
+    , util= require("@dawadk/dawa-util")
+    , kort= require("@dawadk/dawa-kort");
 
   var map
     , fra= moment().startOf('day')

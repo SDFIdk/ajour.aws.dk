@@ -11,8 +11,8 @@
   "author": "Finn Jordal",
   "license": "MIT",
   "dependencies": {
-    "@dawadk/dawa-kort": "^0.1.49",
-    "@dawadk/dawa-util": "^0.1.14",
+    "@dawadk/dawa-kort": "^0.1.50",
+    "@dawadk/dawa-util": "^0.1.15",
     "leaflet": "^1.6.0",
     "mapbox-gl": "^2.6.1",
     "mapbox-gl-leaflet": "0.0.4",
